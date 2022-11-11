@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using OpenUtau.Api;
-using Serilog;
+using OpenUtau.Core.G2p;
 
 namespace OpenUtau.Plugin.Builtin {
-    [Phonemizer("Teto English Phonemizer", "EN Teto", "nago & Heiden.BZR")]
+    [Phonemizer("Teto English Phonemizer", "EN Teto", "nago & Heiden.BZR", language: "EN")]
     public class TetoEnglishPhonemizer : SyllableBasedPhonemizer {
 
         private readonly string[] vowels = "a,A,@,{,V,O,aU,aI,E,3,eI,I,i,oU,OI,U,u".Split(",");
@@ -38,8 +37,13 @@ namespace OpenUtau.Plugin.Builtin {
             if (syllable.IsStartingV) {
                 basePhoneme = $"- {v}";
             } else if (syllable.IsVV) {
-                basePhoneme = $"{prevV} {v}";
-                if (!HasOto(basePhoneme, syllable.vowelTone)) {
+                if (!CanMakeAliasExtension(syllable)) {
+                    basePhoneme = $"{prevV} {v}";
+                } else {
+                    // the previous alias will be extended
+                    basePhoneme = null;
+                } 
+                if (!HasOto($"{prevV} {v}", syllable.vowelTone)) {
                     basePhoneme = $"- {v}";
                     phonemes.Add($"{prevV} -");
                 }
@@ -83,8 +87,13 @@ namespace OpenUtau.Plugin.Builtin {
                 }
             } else { // VCV
                 var vcv = $"{prevV} h{v}";
-                if (cc[0] == "h" && HasOto(vcv, syllable.vowelTone)) {
+                if (cc[0] == "h" && syllable.IsVCVWithOneConsonant && HasOto(vcv, syllable.vowelTone)) {
                     basePhoneme = vcv;
+                } else if (string.Join("", cc) == "hj" && prevV == "u" && syllable.IsVCVWithMoreThanOneConsonant && HasOto($"u hju", syllable.vowelTone)) {
+                    basePhoneme = $"u hju";
+                } else if (string.Join("", cc) == "hj" && prevV != "u") {
+                    basePhoneme = $"- hju";
+                    phonemes.Add($"{prevV} -");
                 } else {
                     // try vcc
                     for (var i = lastC + 1; i >= 0; i--) {
@@ -107,6 +116,10 @@ namespace OpenUtau.Plugin.Builtin {
                             if (HasOto(ccv, syllable.vowelTone)) {
                                 lastC = i;
                                 basePhoneme = ccv;
+                                break;
+                            } else if (string.Join("", cc.Skip(i)) == "hj") {
+                                lastC = i;
+                                basePhoneme = $"- hju";
                                 break;
                             }
                         }

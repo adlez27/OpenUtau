@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using OpenUtau.Api;
+using OpenUtau.Core.G2p;
 using WanaKanaNet;
 
 namespace OpenUtau.Plugin.Builtin {
-    [Phonemizer("English to Japanese Phonemizer", "EN to JA", "TUBS")]
+    [Phonemizer("English to Japanese Phonemizer", "EN to JA", "TUBS", language: "EN")]
     public class ENtoJAPhonemizer : SyllableBasedPhonemizer {
         protected override string[] GetVowels() => vowels;
         private static readonly string[] vowels =
@@ -391,7 +392,20 @@ namespace OpenUtau.Plugin.Builtin {
                     }
                     phonemes.Add(solo);
                 }
+
+                if (solo.Contains("ん")) {
+                    if (ending.IsEndingVCWithOneConsonant) {
+                        TryAddPhoneme(phonemes, ending.tone, $"n R", $"n -", $"n-");
+                    } else if (ending.IsEndingVCWithMoreThanOneConsonant && cc.Last() == "n" || cc.Last() == "ng") {
+                        TryAddPhoneme(phonemes, ending.tone, $"n R", $"n -", $"n-");
+                    }
+                }
+
                 prevV = WanaKana.ToRomaji(solo).Last<char>().ToString();
+            }
+            
+            if (ending.IsEndingV) {
+                TryAddPhoneme(phonemes, ending.tone, $"{prevV} R", $"{prevV} -", $"{prevV}-");
             }
 
             return phonemes;

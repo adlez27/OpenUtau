@@ -15,6 +15,7 @@ namespace OpenUtau.Classic {
         public string Web;
         public string Version;
         public string OtherInfo;
+        public string DefaultPhonemizer;
         public Encoding TextFileEncoding;
         public USingerType SingerType = USingerType.Classic;
         public List<OtoSet> OtoSets = new List<OtoSet>();
@@ -48,7 +49,6 @@ namespace OpenUtau.Classic {
         public string File;
         public string Name;
         public List<Oto> Otos = new List<Oto>();
-        public List<string> Errors = new List<string>();
 
         public override string ToString() {
             return Name;
@@ -80,6 +80,10 @@ namespace OpenUtau.Classic {
         public double Preutter;
         // Length overlap with previous note, usually within consonant range.
         public double Overlap;
+
+        public bool IsValid;
+        public string Error;
+        public FileTrace FileTrace;
 
         public override string ToString() {
             return Alias;

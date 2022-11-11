@@ -5,11 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:OpenUtau.App.ViewModels"
         xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="640"
         x:Class="OpenUtau.App.Views.SingersDialog"
-        Title="{DynamicResource singers.caption}" Width="800" MinWidth="800" MinHeight="600"
+        Icon="/Assets/open-utau.ico"
+        Title="{DynamicResource singers.caption}" Width="1000" MinWidth="800" MinHeight="640"
         WindowStartupLocation="CenterScreen"
-        ExtendClientAreaToDecorationsHint="False">
+        ExtendClientAreaToDecorationsHint="False" KeyDown="OnKeyDown">
   <Design.DataContext>
     <vm:SingersViewModel/>
   </Design.DataContext>
@@ -20,6 +21,11 @@
       <RowDefinition Height="*" MinHeight="160"/>
       <RowDefinition Height="10"/>
       <RowDefinition Height="240" MinHeight="240"/>
+      <RowDefinition Height="10"/>
+      <RowDefinition Height="18"/>
+      <RowDefinition Height="4"/>
+      <RowDefinition Height="18"/>
+      <RowDefinition Height="10"/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="1*"/>
@@ -34,6 +40,8 @@
             Click="OnSingerMenuButton">
       <Button.ContextMenu>
         <ContextMenu Name="SingerMenu" PlacementMode="Bottom">
+          <MenuItem Header="{DynamicResource singers.visitwebsite}" Click="OnVisitWebsite" IsEnabled="{Binding HasWebsite}"/>
+          <MenuItem Header="{DynamicResource singers.setportrait}" Click="OnSetPortrait"/>
           <MenuItem Header="{DynamicResource singers.setencoding}" Items="{Binding SetEncodingMenuItems}">
             <MenuItem.DataTemplates>
               <DataTemplate DataType="vm:MenuItemViewModel">
@@ -41,12 +49,20 @@
               </DataTemplate>
             </MenuItem.DataTemplates>
           </MenuItem>
+          <MenuItem Header="{DynamicResource singers.setdefaultphonemizer}" Items="{Binding SetDefaultPhonemizerMenuItems}">
+            <MenuItem.DataTemplates>
+              <DataTemplate DataType="vm:MenuItemViewModel">
+                <MenuItem Header="{Binding Header}" Command="{Binding Command}" CommandParameter="{Binding CommandParameter}"/>
+              </DataTemplate>
+            </MenuItem.DataTemplates>
+          </MenuItem>
+          <MenuItem Header="{DynamicResource singers.errorreport}" Command="{Binding ErrorReport}"/>
           <MenuItem Header="{DynamicResource singers.refresh}" Command="{Binding Refresh}"/>
         </ContextMenu>
       </Button.ContextMenu>
     </Button>
     <ComboBox Grid.Row="0" x:Name="name" HorizontalAlignment="Stretch" Margin="120,10,0,0" VerticalAlignment="Top"
-              Items="{Binding Singers}" SelectedItem="{Binding Singer}"/>
+              Items="{Binding Singers}" SelectedItem="{Binding Singer}" SelectionChanged="OnSelectedSingerChanged"/>
     <Border Grid.Row="0" Margin="120,40,0,0">
       <ScrollViewer>
         <TextBlock x:Name="info" TextWrapping="Wrap" Text="{Binding Info}"/>
@@ -62,25 +78,41 @@
         <DataGridTextColumn Header="{StaticResource singers.subbanks.color}" Binding="{Binding Color}"/>
       </DataGrid.Columns>
     </DataGrid>
-    <StackPanel Grid.Row="0" Grid.Column="2" Spacing="10" Margin="10,0"
+    <StackPanel Grid.Row="0" Grid.Column="2" Spacing="10" Margin="0,0,10,0"
+                Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+      <Button Margin="0" Content="{DynamicResource singers.editoto.reset}" Command="{Binding RefreshSinger}"
+              IsVisible="{Binding IsClassic}" IsEnabled="{Binding Singer.OtoDirty}"/>
+      <Button Margin="0" Content="{DynamicResource singers.editoto.save}" Command="{Binding SaveOtos}"
+              IsVisible="{Binding IsClassic}" IsEnabled="{Binding Singer.OtoDirty}"/>
+      <Button Margin="0" Content="{DynamicResource singers.editoto.editinvlabeler}"
+              IsVisible="{Binding IsClassic}" Click="OnEditInVLabeler"/>
+    </StackPanel>
+    <StackPanel Grid.Row="0" Grid.Column="2" Spacing="10" Margin="0,0,10,0"
                 Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
       <Button Margin="0" Content="{DynamicResource singers.subbanks.edit}" Click="OnEditSubbanksButton"
               IsEnabled="{Binding Singer, Converter={x:Static ObjectConverters.IsNotNull}}"/>
     </StackPanel>
     <GridSplitter Grid.Row="1" Grid.ColumnSpan="3" Height="10"
                   Background="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
-    <DataGrid Grid.Row="2" Grid.ColumnSpan="3" Margin="10,0,10,0" CanUserResizeColumns="True" BorderThickness="1"
+    <DataGrid Name="OtoGrid" Grid.Row="2" Grid.ColumnSpan="3" Margin="10,0,10,0" CanUserResizeColumns="True" BorderThickness="1"
               BorderBrush="{DynamicResource SystemControlHighlightBaseMediumHighBrush}"
-              Items="{Binding Otos}" SelectedItem="{Binding SelectedOto}"
-              IsReadOnly="True" SelectionChanged="OnSelectionChanged">
+              Items="{Binding Otos}" SelectedItem="{Binding SelectedOto}" SelectedIndex="{Binding SelectedIndex}"
+              SelectionChanged="OnSelectedOtoChanged"
+              BeginningEdit="OnBeginningEdit" CellEditEnded="OnCellEditEnded">
+      <DataGrid.ContextMenu>
+        <ContextMenu>
+          <MenuItem Header="{DynamicResource singers.editoto.gotosource}" Click="GotoSourceFile"/>
+          <MenuItem Header="{DynamicResource singers.editoto.editinvlabeler}" Click="GotoVLabelerOto"/>
+        </ContextMenu>
+      </DataGrid.ContextMenu>
       <DataGrid.Columns>
-        <DataGridTextColumn Header="{StaticResource oto.alias}" Binding="{Binding Alias}"/>
-        <DataGridTextColumn Header="{StaticResource oto.set}" Binding="{Binding Set}"/>
-        <DataGridTextColumn Header="{StaticResource oto.file}" Binding="{Binding DisplayFile}"/>
-        <DataGridTextColumn Header="{StaticResource oto.phonetic}" Binding="{Binding Phonetic}"/>
-        <DataGridTextColumn Header="{StaticResource oto.prefix}" Binding="{Binding Prefix}"/>
-        <DataGridTextColumn Header="{StaticResource oto.suffix}" Binding="{Binding Suffix}"/>
-        <DataGridTextColumn Header="{StaticResource oto.color}" Binding="{Binding Color}"/>
+        <DataGridTextColumn Header="{StaticResource oto.alias}" Binding="{Binding Alias}" IsReadOnly="True" />
+        <DataGridTextColumn Header="{StaticResource oto.set}" Binding="{Binding Set}" IsReadOnly="True"/>
+        <DataGridTextColumn Header="{StaticResource oto.file}" Binding="{Binding DisplayFile}" IsReadOnly="True"/>
+        <DataGridTextColumn Header="{StaticResource oto.phonetic}" Binding="{Binding Phonetic}" IsReadOnly="True"/>
+        <DataGridTextColumn Header="{StaticResource oto.prefix}" Binding="{Binding Prefix}" IsReadOnly="True"/>
+        <DataGridTextColumn Header="{StaticResource oto.suffix}" Binding="{Binding Suffix}" IsReadOnly="True"/>
+        <DataGridTextColumn Header="{StaticResource oto.color}" Binding="{Binding Color}" IsReadOnly="True"/>
         <DataGridTextColumn Header="{StaticResource oto.offset}" Binding="{Binding Offset}"/>
         <DataGridTextColumn Header="{StaticResource oto.consonant}" Binding="{Binding Consonant}"/>
         <DataGridTextColumn Header="{StaticResource oto.cutoff}" Binding="{Binding Cutoff}"/>
@@ -90,11 +122,75 @@
     </DataGrid>
     <GridSplitter Grid.Row="3" Grid.ColumnSpan="3" Height="10"
                   Background="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
-    <Border Grid.Row="4" Grid.ColumnSpan="3" Margin="10,0,10,10">
+    <StackPanel Grid.Row="6" Grid.ColumnSpan="3" Margin="10,0" Orientation="Horizontal" Spacing="3">
+      <Border Margin="0" BorderThickness="1" CornerRadius="4"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <TextBlock Margin="2,0">Q</TextBlock>
+      </Border>
+      <TextBlock Margin="0,1,6,1" Text="{DynamicResource singers.otoview.selectprev}"/>
+      <Border Margin="0" BorderThickness="1" CornerRadius="4"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <TextBlock Margin="2,0">E</TextBlock>
+      </Border>
+      <TextBlock Margin="0,1,6,1" Text="{DynamicResource singers.otoview.selectnext}"/>
+      <Border Margin="0" BorderThickness="1" CornerRadius="4"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <TextBlock Margin="2,0">F</TextBlock>
+      </Border>
+      <TextBlock Margin="0,1,6,1" Text="{DynamicResource singers.otoview.showall}"/>
+      <Border Margin="0" BorderThickness="1" CornerRadius="4"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <TextBlock Margin="2,0">W</TextBlock>
+      </Border>
+      <TextBlock Margin="0,1,6,1" Text="{DynamicResource singers.otoview.zoomin}"/>
+      <Border Margin="0" BorderThickness="1" CornerRadius="4"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <TextBlock Margin="2,0">S</TextBlock>
+      </Border>
+      <TextBlock Margin="0,1,6,1" Text="{DynamicResource singers.otoview.zoomout}"/>
+      <Border Margin="0" BorderThickness="1" CornerRadius="4"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <TextBlock Margin="2,0">A</TextBlock>
+      </Border>
+      <TextBlock Margin="0,1,6,1" Text="{DynamicResource singers.otoview.moveleft}"/>
+      <Border Margin="0" BorderThickness="1" CornerRadius="4"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <TextBlock Margin="2,0">D</TextBlock>
+      </Border>
+      <TextBlock Margin="0,1,6,1" Text="{DynamicResource singers.otoview.moveright}"/>
+    </StackPanel>
+    <StackPanel Grid.Row="8" Grid.ColumnSpan="3" Margin="10,0" Orientation="Horizontal" Spacing="3">
+      <Border Margin="0" BorderThickness="1" CornerRadius="4"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <TextBlock Margin="2,0">1</TextBlock>
+      </Border>
+      <TextBlock Margin="0,1,6,1" Text="{DynamicResource oto.edit.offset}"/>
+      <Border Margin="0" BorderThickness="1" CornerRadius="4"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <TextBlock Margin="2,0">2</TextBlock>
+      </Border>
+      <TextBlock Margin="0,1,6,1" Text="{DynamicResource oto.edit.overlap}"/>
+      <Border Margin="0" BorderThickness="1" CornerRadius="4"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <TextBlock Margin="2,0">3</TextBlock>
+      </Border>
+      <TextBlock Margin="0,1,6,1" Text="{DynamicResource oto.edit.preutter}"/>
+      <Border Margin="0" BorderThickness="1" CornerRadius="4"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <TextBlock Margin="2,0">4</TextBlock>
+      </Border>
+      <TextBlock Margin="0,1,6,1" Text="{DynamicResource oto.edit.consonant}"/>
+      <Border Margin="0" BorderThickness="1" CornerRadius="4"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <TextBlock Margin="2,0">5</TextBlock>
+      </Border>
+      <TextBlock Margin="0,1,6,1" Text="{DynamicResource oto.edit.cutoff}"/>
+    </StackPanel>
+    <Border Grid.Row="4" Grid.ColumnSpan="3" Margin="10,0">
       <TextBlock Text="libgdiplus missing" VerticalAlignment="Center" HorizontalAlignment="Center"/>
     </Border>
-    <Border Grid.Row="4" Grid.ColumnSpan="3" Margin="10,0,10,10">
-      <ScottPlot:AvaPlot Name="OtoPlot" PointerMoved="OtoPlot_OnPointerMoved" KeyDown="OtoPlot_OnKeyDown"/>
+    <Border Grid.Row="4" Grid.ColumnSpan="3" Margin="10,0">
+      <ScottPlot:AvaPlot Name="OtoPlot" PointerMoved="OtoPlot_OnPointerMoved"/>
     </Border>
   </Grid>
 </Window>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -19,6 +20,7 @@ using OpenUtau.Classic;
 using OpenUtau.Core;
 using OpenUtau.Core.Format;
 using OpenUtau.Core.Ustx;
+using ReactiveUI;
 using Serilog;
 using Point = Avalonia.Point;
 
@@ -34,29 +36,53 @@ namespace OpenUtau.App.Views {
         private PartEditState? partEditState;
         private Rectangle? selectionBox;
         private DispatcherTimer timer;
+        private DispatcherTimer autosaveTimer;
         private bool forceClose;
 
+        private ContextMenu? partsContextMenu;
+        private bool shouldOpenPartsContextMenu;
+
+        private readonly ReactiveCommand<UPart, Unit> PartRenameCommand;
+
         public MainWindow() {
+            Log.Information("Creating main window.");
             InitializeComponent();
+            Log.Information("Initialized main window component.");
             DataContext = viewModel = new MainWindowViewModel();
+            partsContextMenu = this.Find<ContextMenu>("PartsContextMenu");
 #if DEBUG
             this.AttachDevTools();
 #endif
             viewModel.InitProject();
+            viewModel.AddTempoChangeCmd = ReactiveCommand.Create<int>(tick => AddTempoChange(tick));
+            viewModel.DelTempoChangeCmd = ReactiveCommand.Create<int>(tick => DelTempoChange(tick));
+            viewModel.AddTimeSigChangeCmd = ReactiveCommand.Create<int>(bar => AddTimeSigChange(bar));
+            viewModel.DelTimeSigChangeCmd = ReactiveCommand.Create<int>(bar => DelTimeSigChange(bar));
+
             timer = new DispatcherTimer(
                 TimeSpan.FromMilliseconds(15),
                 DispatcherPriority.Normal,
                 (sender, args) => PlaybackManager.Inst.UpdatePlayPos());
             timer.Start();
 
+            autosaveTimer = new DispatcherTimer(
+                TimeSpan.FromSeconds(30),
+                DispatcherPriority.Normal,
+                (sender, args) => DocManager.Inst.AutoSave());
+            autosaveTimer.Start();
+
+            PartRenameCommand = ReactiveCommand.Create<UPart>(part => RenamePart(part));
+
             AddHandler(DragDrop.DropEvent, OnDrop);
 
             DocManager.Inst.AddSubscriber(this);
 
+            Log.Information("Main window checking Update.");
             UpdaterDialog.CheckForUpdate(
                 dialog => dialog.Show(this),
-                () => ((IControlledApplicationLifetime)Application.Current.ApplicationLifetime).Shutdown(),
+                () => (Application.Current?.ApplicationLifetime as IControlledApplicationLifetime)?.Shutdown(),
                 TaskScheduler.FromCurrentSynchronizationContext());
+            Log.Information("Created main window.");
         }
 
         private void InitializeComponent() {
@@ -65,13 +91,9 @@ namespace OpenUtau.App.Views {
 
         void OnEditTimeSignature(object sender, PointerPressedEventArgs args) {
             var project = DocManager.Inst.Project;
-            var dialog = new TypeInDialog();
-            dialog.Title = ThemeManager.GetString("dialogs.timesig.caption");
-            dialog.SetText($"{project.beatPerBar}/{project.beatUnit}");
-            dialog.onFinish = s => {
-                var parts = s.Split('/');
-                int beatPerBar = parts.Length > 0 && int.TryParse(parts[0], out beatPerBar) ? beatPerBar : project.beatPerBar;
-                int beatUnit = parts.Length > 1 && int.TryParse(parts[1], out beatUnit) ? beatUnit : project.beatUnit;
+            var timeSig = project.timeSignatures[0];
+            var dialog = new TimeSignatureDialog(timeSig.beatPerBar, timeSig.beatUnit);
+            dialog.OnOk = (beatPerBar, beatUnit) => {
                 viewModel.PlaybackViewModel.SetTimeSignature(beatPerBar, beatUnit);
             };
             dialog.ShowDialog(this);
@@ -83,7 +105,7 @@ namespace OpenUtau.App.Views {
             var project = DocManager.Inst.Project;
             var dialog = new TypeInDialog();
             dialog.Title = "BPM";
-            dialog.SetText(project.bpm.ToString());
+            dialog.SetText(project.tempos[0].bpm.ToString());
             dialog.onFinish = s => {
                 if (double.TryParse(s, out double bpm)) {
                     viewModel.PlaybackViewModel.SetBpm(bpm);
@@ -92,6 +114,49 @@ namespace OpenUtau.App.Views {
             dialog.ShowDialog(this);
             // Workaround for https://github.com/AvaloniaUI/Avalonia/issues/3986
             args.Pointer.Capture(null);
+        }
+
+        private void AddTempoChange(int tick) {
+            var project = DocManager.Inst.Project;
+            var dialog = new TypeInDialog();
+            dialog.Title = "BPM";
+            dialog.SetText(project.tempos[0].bpm.ToString());
+            dialog.onFinish = s => {
+                if (double.TryParse(s, out double bpm)) {
+                    DocManager.Inst.StartUndoGroup();
+                    DocManager.Inst.ExecuteCmd(new AddTempoChangeCommand(
+                        project, tick, bpm));
+                    DocManager.Inst.EndUndoGroup();
+                }
+            };
+            dialog.ShowDialog(this);
+        }
+
+        private void DelTempoChange(int tick) {
+            var project = DocManager.Inst.Project;
+            DocManager.Inst.StartUndoGroup();
+            DocManager.Inst.ExecuteCmd(new DelTempoChangeCommand(project, tick));
+            DocManager.Inst.EndUndoGroup();
+        }
+
+        private void AddTimeSigChange(int bar) {
+            var project = DocManager.Inst.Project;
+            var timeSig = project.timeAxis.TimeSignatureAtBar(bar);
+            var dialog = new TimeSignatureDialog(timeSig.beatPerBar, timeSig.beatUnit);
+            dialog.OnOk = (beatPerBar, beatUnit) => {
+                DocManager.Inst.StartUndoGroup();
+                DocManager.Inst.ExecuteCmd(new AddTimeSigCommand(
+                    project, bar, dialog.BeatPerBar, dialog.BeatUnit));
+                DocManager.Inst.EndUndoGroup();
+            };
+            dialog.ShowDialog(this);
+        }
+
+        private void DelTimeSigChange(int bar) {
+            var project = DocManager.Inst.Project;
+            DocManager.Inst.StartUndoGroup();
+            DocManager.Inst.ExecuteCmd(new DelTimeSigCommand(project, bar));
+            DocManager.Inst.EndUndoGroup();
         }
 
         void OnMenuNew(object sender, RoutedEventArgs args) => NewProject();
@@ -111,21 +176,20 @@ namespace OpenUtau.App.Views {
                 Filters = new List<FileDialogFilter>() {
                     new FileDialogFilter() {
                         Name = "Project Files",
-                        Extensions = new List<string>(){ "ustx", "vsqx", "ust" },
+                        Extensions = new List<string>(){ "ustx", "vsqx", "ust", "mid", "midi" },
                     },
                 },
                 AllowMultiple = true,
             };
             var files = await dialog.ShowAsync(this);
+            if (files == null || files.Length == 0) {
+                return;
+            }
             try {
                 viewModel.OpenProject(files);
             } catch (Exception e) {
                 Log.Error(e, $"Failed to open files {string.Join("\n", files)}");
-                _ = await MessageBox.Show(
-                     this,
-                     e.ToString(),
-                     ThemeManager.GetString("errors.caption"),
-                     MessageBox.MessageBoxButtons.Ok);
+                _ = await MessageBox.ShowError(this, e);
             }
         }
 
@@ -133,6 +197,31 @@ namespace OpenUtau.App.Views {
             viewModel.RefreshOpenRecent();
             viewModel.RefreshTemplates();
             viewModel.RefreshCacheSize();
+        }
+
+        void OnMainMenuClosed(object sender, RoutedEventArgs args) {
+            Focus(); // Force unfocus menu for key down events.
+        }
+
+        void OnMainMenuPointerLeave(object sender, PointerEventArgs args) {
+            Focus(); // Force unfocus menu for key down events.
+        }
+
+        void OnMenuOpenProjectLocation(object sender, RoutedEventArgs args) {
+            var project = DocManager.Inst.Project;
+            if (string.IsNullOrEmpty(project.FilePath) || !project.Saved) {
+                MessageBox.Show(
+                    this,
+                    ThemeManager.GetString("dialogs.export.savefirst"),
+                    ThemeManager.GetString("errors.caption"),
+                    MessageBox.MessageBoxButtons.Ok);
+            }
+            try {
+                OS.OpenFolder(System.IO.Path.GetDirectoryName(project.FilePath));
+            } catch (Exception e) {
+                Log.Error(e, "Failed to open project location.");
+                MessageBox.ShowError(this, e);
+            }
         }
 
         async void OnMenuSave(object sender, RoutedEventArgs args) => await Save();
@@ -184,7 +273,7 @@ namespace OpenUtau.App.Views {
                 Filters = new List<FileDialogFilter>() {
                     new FileDialogFilter() {
                         Name = "Project Files",
-                        Extensions = new List<string>(){ "ustx", "vsqx", "ust" },
+                        Extensions = new List<string>(){ "ustx", "vsqx", "ust", "mid", "midi" },
                     },
                 },
                 AllowMultiple = true,
@@ -193,11 +282,7 @@ namespace OpenUtau.App.Views {
                 viewModel.ImportTracks(await dialog.ShowAsync(this));
             } catch (Exception e) {
                 Log.Error(e, $"Failed to import files");
-                _ = await MessageBox.Show(
-                     this,
-                     e.ToString(),
-                     ThemeManager.GetString("errors.caption"),
-                     MessageBox.MessageBoxButtons.Ok);
+                _ = await MessageBox.ShowError(this, e);
             }
         }
 
@@ -206,7 +291,7 @@ namespace OpenUtau.App.Views {
                 Filters = new List<FileDialogFilter>() {
                     new FileDialogFilter() {
                         Name = "Audio Files",
-                        Extensions = new List<string>(){ "wav", "mp3", "ogg", "flac" },
+                        Extensions = Wave.FileExtensions,
                     },
                 },
                 AllowMultiple = false,
@@ -219,11 +304,7 @@ namespace OpenUtau.App.Views {
                 viewModel.ImportAudio(files[0]);
             } catch (Exception e) {
                 Log.Error(e, "Failed to import audio");
-                _ = await MessageBox.Show(
-                     this,
-                     e.ToString(),
-                     ThemeManager.GetString("errors.caption"),
-                     MessageBox.MessageBoxButtons.Ok);
+                _ = await MessageBox.ShowError(this, e);
             }
         }
 
@@ -232,7 +313,7 @@ namespace OpenUtau.App.Views {
                 Filters = new List<FileDialogFilter>() {
                     new FileDialogFilter() {
                         Name = "Midi File",
-                        Extensions = new List<string>(){ "mid" },
+                        Extensions = new List<string>(){ "mid", "midi" },
                     },
                 },
                 AllowMultiple = false,
@@ -245,11 +326,7 @@ namespace OpenUtau.App.Views {
                 viewModel.ImportMidi(files[0]);
             } catch (Exception e) {
                 Log.Error(e, "Failed to import midi");
-                _ = await MessageBox.Show(
-                     this,
-                     e.ToString(),
-                     ThemeManager.GetString("errors.caption"),
-                     MessageBox.MessageBoxButtons.Ok);
+                _ = await MessageBox.ShowError(this, e);
             }
         }
 
@@ -321,6 +398,22 @@ namespace OpenUtau.App.Views {
             }
         }
 
+        async void OnMenuExportMidi(object sender, RoutedEventArgs e) {
+            var project = DocManager.Inst.Project;
+            var dialog = new SaveFileDialog() {
+                DefaultExtension = "mid",
+                Filters = new List<FileDialogFilter>() {
+                    new FileDialogFilter() {
+                        Extensions = new List<string>(){ "mid" },
+                    },
+                },
+            };
+            var file = await dialog.ShowAsync(this);
+            if (!string.IsNullOrEmpty(file)) {
+                MidiWriter.Save(file, project);
+            }
+        }
+
         private async Task<bool> WarnToSave(UProject project) {
             if (string.IsNullOrEmpty(project.FilePath)) {
                 await MessageBox.Show(
@@ -344,10 +437,22 @@ namespace OpenUtau.App.Views {
         }
 
         void OnMenuSingers(object sender, RoutedEventArgs args) {
-            var dialog = new SingersDialog() {
-                DataContext = new SingersViewModel(),
-            };
-            dialog.ShowDialog(this);
+            OpenSingersWindow();
+        }
+
+        public void OpenSingersWindow() {
+            var lifetime = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+            if (lifetime == null) {
+                return;
+            }
+            var dialog = lifetime.Windows.FirstOrDefault(w => w is SingersDialog);
+            if (dialog == null) {
+                dialog = new SingersDialog() {
+                    DataContext = new SingersViewModel(),
+                };
+                dialog.Show();
+            }
+            dialog.Activate();
             if (dialog.Position.Y < 0) {
                 dialog.Position = dialog.Position.WithY(0);
             }
@@ -371,14 +476,18 @@ namespace OpenUtau.App.Views {
                 Core.Vogen.VogenSingerInstaller.Install(files[0]);
                 return;
             }
-            var setup = new SingerSetupDialog() {
-                DataContext = new SingerSetupViewModel() {
-                    ArchiveFilePath = files[0],
-                },
-            };
-            _ = setup.ShowDialog(this);
-            if (setup.Position.Y < 0) {
-                setup.Position = setup.Position.WithY(0);
+            try {
+                var setup = new SingerSetupDialog() {
+                    DataContext = new SingerSetupViewModel() {
+                        ArchiveFilePath = files[0],
+                    },
+                };
+                _ = setup.ShowDialog(this);
+                if (setup.Position.Y < 0) {
+                    setup.Position = setup.Position.WithY(0);
+                }
+            } catch (Exception e) {
+                _ = MessageBox.ShowError(this, e);
             }
         }
 
@@ -412,19 +521,47 @@ namespace OpenUtau.App.Views {
             window.Show();
         }
 
+        void OnMenuPhoneticAssistant(object sender, RoutedEventArgs args) {
+            var desktop = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+            if (desktop == null) {
+                return;
+            }
+            var window = desktop.Windows.FirstOrDefault(w => w is PhoneticAssistant);
+            if (window == null) {
+                window = new PhoneticAssistant();
+            }
+            window.Show();
+        }
+
+        void OnMenuCheckUpdate(object sender, RoutedEventArgs args) {
+            var dialog = new UpdaterDialog();
+            dialog.ViewModel.CloseApplication =
+                () => (Application.Current?.ApplicationLifetime as IControlledApplicationLifetime)?.Shutdown();
+            dialog.ShowDialog(this);
+        }
+
+        void OnMenuLogsLocation(object sender, RoutedEventArgs args) {
+            try {
+                OS.OpenFolder(PathManager.Inst.LogsPath);
+            } catch (Exception e) {
+                DocManager.Inst.ExecuteCmd(new ErrorMessageNotification(e));
+            }
+        }
+
+        void OnMenuReportIssue(object sender, RoutedEventArgs args) {
+            try {
+                OS.OpenWeb("https://github.com/stakira/OpenUtau/issues");
+            } catch (Exception e) {
+                DocManager.Inst.ExecuteCmd(new ErrorMessageNotification(e));
+            }
+        }
+
         void OnMenuWiki(object sender, RoutedEventArgs args) {
             try {
                 OS.OpenWeb("https://github.com/stakira/OpenUtau/wiki/Getting-Started");
             } catch (Exception e) {
-                DocManager.Inst.ExecuteCmd(new UserMessageNotification(e.ToString()));
+                DocManager.Inst.ExecuteCmd(new ErrorMessageNotification(e));
             }
-        }
-
-        void OnMenuVersion(object sender, RoutedEventArgs args) {
-            var dialog = new UpdaterDialog();
-            dialog.ViewModel.CloseApplication =
-                () => ((IControlledApplicationLifetime)Application.Current.ApplicationLifetime).Shutdown();
-            dialog.ShowDialog(this);
         }
 
         void OnMenuLayoutVSplit11(object sender, RoutedEventArgs args) => LayoutSplit(null, 1.0 / 2);
@@ -455,17 +592,33 @@ namespace OpenUtau.App.Views {
         void OnKeyDown(object sender, KeyEventArgs args) {
             var tracksVm = viewModel.TracksViewModel;
             if (args.KeyModifiers == KeyModifiers.None) {
+                args.Handled = true;
                 switch (args.Key) {
                     case Key.Delete: viewModel.TracksViewModel.DeleteSelectedParts(); break;
                     case Key.Space: PlayOrPause(); break;
-                    default: break;
+                    case Key.Home: viewModel.PlaybackViewModel.MovePlayPos(0); break;
+                    case Key.End:
+                        if (viewModel.TracksViewModel.Parts.Count > 0) {
+                            int endTick = viewModel.TracksViewModel.Parts.Max(part => part.End);
+                            viewModel.PlaybackViewModel.MovePlayPos(endTick);
+                        }
+                        break;
+                    default:
+                        args.Handled = false;
+                        break;
                 }
             } else if (args.KeyModifiers == KeyModifiers.Alt) {
+                args.Handled = true;
                 switch (args.Key) {
-                    case Key.F4: ((IControlledApplicationLifetime)Application.Current.ApplicationLifetime).Shutdown(); break;
-                    default: break;
+                    case Key.F4:
+                        (Application.Current?.ApplicationLifetime as IControlledApplicationLifetime)?.Shutdown();
+                        break;
+                    default:
+                        args.Handled = false;
+                        break;
                 }
             } else if (args.KeyModifiers == cmdKey) {
+                args.Handled = true;
                 switch (args.Key) {
                     case Key.A: viewModel.TracksViewModel.SelectAllParts(); break;
                     case Key.N: NewProject(); break;
@@ -476,22 +629,27 @@ namespace OpenUtau.App.Views {
                     case Key.C: tracksVm.CopyParts(); break;
                     case Key.X: tracksVm.CutParts(); break;
                     case Key.V: tracksVm.PasteParts(); break;
-                    default: break;
+                    default:
+                        args.Handled = false;
+                        break;
                 }
             } else if (args.KeyModifiers == (cmdKey | KeyModifiers.Shift)) {
+                args.Handled = true;
                 switch (args.Key) {
                     case Key.Z: viewModel.Redo(); break;
-                    default: break;
+                    case Key.S: _ = SaveAs(); break;
+                    default:
+                        args.Handled = false;
+                        break;
                 }
             }
-            args.Handled = true;
         }
 
         async void OnDrop(object? sender, DragEventArgs args) {
             if (!args.Data.Contains(DataFormats.FileNames)) {
                 return;
             }
-            string file = args.Data.GetFileNames().FirstOrDefault();
+            string file = args.Data.GetFileNames()?.FirstOrDefault() ?? string.Empty;
             if (string.IsNullOrEmpty(file)) {
                 return;
             }
@@ -504,11 +662,14 @@ namespace OpenUtau.App.Views {
                     viewModel.OpenProject(new string[] { file });
                 } catch (Exception e) {
                     Log.Error(e, $"Failed to open file {file}");
-                    _ = await MessageBox.Show(
-                         this,
-                         e.ToString(),
-                         ThemeManager.GetString("errors.caption"),
-                         MessageBox.MessageBoxButtons.Ok);
+                    _ = await MessageBox.ShowError(this, e);
+                }
+            } else if (ext == ".mid") {
+                try {
+                    viewModel.ImportMidi(file);
+                } catch (Exception e) {
+                    Log.Error(e, "Failed to import midi");
+                    _ = await MessageBox.ShowError(this, e);
                 }
             } else if (ext == ".zip" || ext == ".rar" || ext == ".uar") {
                 var setup = new SingerSetupDialog() {
@@ -527,11 +688,7 @@ namespace OpenUtau.App.Views {
                     viewModel.ImportAudio(file);
                 } catch (Exception e) {
                     Log.Error(e, "Failed to import audio");
-                    _ = await MessageBox.Show(
-                         this,
-                         e.ToString(),
-                         ThemeManager.GetString("errors.caption"),
-                         MessageBox.MessageBoxButtons.Ok);
+                    _ = await MessageBox.ShowError(this, e);
                 }
             }
         }
@@ -541,12 +698,22 @@ namespace OpenUtau.App.Views {
         }
 
         void PlayOrPause() {
-            if (!viewModel.PlaybackViewModel.PlayOrPause()) {
+            try {
+                viewModel.PlaybackViewModel.PlayOrPause();
+            } catch (Core.Render.NoResamplerException _) {
                 MessageBox.Show(
                    this,
                    ThemeManager.GetString("dialogs.noresampler.message"),
                    ThemeManager.GetString("dialogs.noresampler.caption"),
                    MessageBox.MessageBoxButtons.Ok);
+            } catch (Core.Render.NoWavtoolException _) {
+                MessageBox.Show(
+                   this,
+                   ThemeManager.GetString("dialogs.noresampler.message"),
+                   ThemeManager.GetString("dialogs.noresampler.caption"),
+                   MessageBox.MessageBoxButtons.Ok);
+            } catch (Exception e) {
+                MessageBox.ShowError(this, e);
             }
         }
 
@@ -577,8 +744,11 @@ namespace OpenUtau.App.Views {
             var point = args.GetCurrentPoint(canvas);
             if (point.Properties.IsLeftButtonPressed) {
                 args.Pointer.Capture(canvas);
-                int tick = viewModel.TracksViewModel.PointToSnappedTick(point.Position);
-                viewModel.PlaybackViewModel.MovePlayPos(tick);
+                viewModel.TracksViewModel.PointToLineTick(point.Position, out int left, out int right);
+                viewModel.PlaybackViewModel.MovePlayPos(left);
+            } else if (point.Properties.IsRightButtonPressed) {
+                int tick = viewModel.TracksViewModel.PointToTick(point.Position);
+                viewModel.RefreshTimelineContextMenu(tick);
             }
         }
 
@@ -586,8 +756,8 @@ namespace OpenUtau.App.Views {
             var canvas = (Canvas)sender;
             var point = args.GetCurrentPoint(canvas);
             if (point.Properties.IsLeftButtonPressed) {
-                int tick = viewModel.TracksViewModel.PointToSnappedTick(point.Position);
-                viewModel.PlaybackViewModel.MovePlayPos(tick);
+                viewModel.TracksViewModel.PointToLineTick(point.Position, out int left, out int right);
+                viewModel.PlaybackViewModel.MovePlayPos(left);
             }
         }
 
@@ -604,12 +774,6 @@ namespace OpenUtau.App.Views {
             }
             if (point.Properties.IsLeftButtonPressed) {
                 if (args.KeyModifiers == cmdKey) {
-                    // New selection.
-                    viewModel.TracksViewModel.DeselectParts();
-                    partEditState = new PartSelectionEditState(canvas, viewModel, GetSelectionBox(canvas));
-                    Cursor = ViewConstants.cursorCross;
-                } else if (args.KeyModifiers == (cmdKey | KeyModifiers.Shift)) {
-                    // Additional selection.
                     partEditState = new PartSelectionEditState(canvas, viewModel, GetSelectionBox(canvas));
                     Cursor = ViewConstants.cursorCross;
                 } else if (control == canvas) {
@@ -638,9 +802,22 @@ namespace OpenUtau.App.Views {
                     }
                 }
             } else if (point.Properties.IsRightButtonPressed) {
-                viewModel.TracksViewModel.DeselectParts();
-                partEditState = new PartEraseEditState(canvas, viewModel);
-                Cursor = ViewConstants.cursorNo;
+                if (control is PartControl partControl) {
+                    if (!viewModel.TracksViewModel.SelectedParts.Contains(partControl.part)) {
+                        viewModel.TracksViewModel.DeselectParts();
+                        viewModel.TracksViewModel.SelectPart(partControl.part);
+                    }
+                    if (partsContextMenu != null && viewModel.TracksViewModel.SelectedParts.Count > 0) {
+                        partsContextMenu.DataContext = new PartsContextMenuArgs {
+                            Part = partControl.part,
+                            PartDeleteCommand = viewModel.PartDeleteCommand,
+                            PartRenameCommand = PartRenameCommand,
+                        };
+                        shouldOpenPartsContextMenu = true;
+                    }
+                } else {
+                    viewModel.TracksViewModel.DeselectParts();
+                }
             } else if (point.Properties.IsMiddleButtonPressed) {
                 partEditState = new PartPanningState(canvas, viewModel);
                 Cursor = ViewConstants.cursorHand;
@@ -751,6 +928,40 @@ namespace OpenUtau.App.Views {
                 var timelineCanvas = this.FindControl<Canvas>("TimelineCanvas");
                 TimelinePointerWheelChanged(timelineCanvas, args);
             }
+            if (partEditState != null) {
+                var point = args.GetCurrentPoint(partEditState.canvas);
+                partEditState.Update(point.Pointer, point.Position);
+            }
+        }
+
+        public void PartsContextMenuOpening(object sender, CancelEventArgs args) {
+            if (shouldOpenPartsContextMenu) {
+                shouldOpenPartsContextMenu = false;
+            } else {
+                args.Cancel = true;
+            }
+        }
+
+        public void PartsContextMenuClosing(object sender, CancelEventArgs args) {
+            if (partsContextMenu != null) {
+                partsContextMenu.DataContext = null;
+            }
+        }
+
+        void RenamePart(UPart part) {
+            var dialog = new TypeInDialog();
+            dialog.Title = ThemeManager.GetString("context.part.rename");
+            dialog.SetText(part.name);
+            dialog.onFinish = name => {
+                if (!string.IsNullOrWhiteSpace(name) && name != part.name) {
+                    if (!string.IsNullOrWhiteSpace(name) && name != part.name) {
+                        DocManager.Inst.StartUndoGroup();
+                        DocManager.Inst.ExecuteCmd(new RenamePartCommand(DocManager.Inst.Project, part, name));
+                        DocManager.Inst.EndUndoGroup();
+                    }
+                }
+            };
+            dialog.ShowDialog(this);
         }
 
         public async void WindowClosing(object? sender, CancelEventArgs e) {
@@ -784,12 +995,8 @@ namespace OpenUtau.App.Views {
         }
 
         public void OnNext(UCommand cmd, bool isUndo) {
-            if (cmd is UserMessageNotification userMessage) {
-                MessageBox.Show(
-                    this,
-                    userMessage.message,
-                    ThemeManager.GetString("errors.caption"),
-                    MessageBox.MessageBoxButtons.Ok);
+            if (cmd is ErrorMessageNotification notif) {
+                MessageBox.ShowError(this, notif.message, notif.e);
             }
         }
     }
