@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using OpenUtau.Api;
+using OpenUtau.Core.G2p;
 using OpenUtau.Plugin.Builtin;
 
 namespace SHOPhonemizer {
-    [Phonemizer("Sword Heart Offline Phonemizer", "EN SHO E", "Adlez27")]
+    [Phonemizer("Sword Heart Offline Phonemizer", "EN SHO E", "Adlez27",
+        language: "EN")]
     public class SwordHeartOfflinePhonemizer : SyllableBasedPhonemizer {
         protected override string[] GetVowels() => vowels;
         private static readonly string[] vowels = "a e i o u @".Split();
