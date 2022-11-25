@@ -1,4 +1,6 @@
+﻿text_file_encoding: utf-8
 portrait_opacity: 0.5
+default_phonemizer: CyriljiPhonemizer.JapaneseCyrillicPhonemizer
 subbanks:
 - color: ''
   prefix: ''

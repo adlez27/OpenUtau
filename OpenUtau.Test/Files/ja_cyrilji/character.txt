@@ -1,1 +1,1 @@
-name=en_cyrilji
+name=ja_cyrilji

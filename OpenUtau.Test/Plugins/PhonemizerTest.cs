@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using OpenUtau.Api;
 using OpenUtau.Classic;
 using OpenUtau.Core;
 using OpenUtau.Core.Ustx;
 using OpenUtau.Plugin.Builtin;
 using Xunit;
+using CyriljiPhonemizer;
 
 namespace OpenUtau.Plugins {
     public abstract class PhonemizerTest<T> where T : Phonemizer {
@@ -64,4 +64,5 @@ namespace OpenUtau.Plugins {
     public class JapaneseVCVPhonemizerTest : PhonemizerTest<JapaneseVCVPhonemizer> { }
     public class KoreanCVCPhonemizerTest : PhonemizerTest<KoreanCVCPhonemizer> { }
     public class KoreanCVVCStandardPronunciationPhonemizerTest : PhonemizerTest<KoreanCVVCStandardPronunciationPhonemizer> { }
+    public class JapaneseCyrillicPhonemizerTest : PhonemizerTest<JapaneseCyrillicPhonemizer> { }
 }
