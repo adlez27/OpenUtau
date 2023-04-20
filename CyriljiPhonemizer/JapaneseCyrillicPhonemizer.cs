@@ -350,7 +350,6 @@ namespace CyriljiPhonemizer {
                     vcLength = MsToTick(oto.Preutter);
                 }
                 vcLength = Convert.ToInt32(Math.Min(totalDuration / 2, vcLength * (attr.consonantStretchRatio ?? 1)));
-                // For some reason consonantStretchRatio is never populated, so vcLength never scales with velocity :(
 
                 phonemes.Add(new Phoneme {
                     phoneme = vc,
