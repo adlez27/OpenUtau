@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using OpenUtau.Api;
 using OpenUtau.Core.G2p;
+using OpenUtau.Plugin.Builtin;
 
-namespace OpenUtau.Plugin.Builtin {
+namespace TetoEnPhonemizer {
     [Phonemizer("Teto English Phonemizer", "EN Teto", "nago & Heiden.BZR", language: "EN")]
     public class TetoEnglishPhonemizer : SyllableBasedPhonemizer {
 

@@ -32,6 +32,7 @@
     <ProjectReference Include="..\OpenUtau.Plugin.Builtin\OpenUtau.Plugin.Builtin.csproj" />
     <ProjectReference Include="..\OpenUtau\OpenUtau.csproj" />
     <ProjectReference Include="..\SHOPhonemizer\SHOPhonemizer.csproj" />
+    <ProjectReference Include="..\TetoEnglishPhonemizer\TetoEnPhonemizer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

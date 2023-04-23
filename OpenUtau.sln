@@ -3,15 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8CC070AB-64DC-4C02-89E7-D8E5EC91A492}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-		.gitignore = .gitignore
-		appveyor.yml = appveyor.yml
-		LICENSE.txt = LICENSE.txt
-		README.md = README.md
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenUtau.Test", "OpenUtau.Test\OpenUtau.Test.csproj", "{7B351EB5-B83A-4938-99A0-45C2B2116DEF}"
 	ProjectSection(ProjectDependencies) = postProject
 		{9535E26C-4584-4126-B6F7-B91B41113196} = {9535E26C-4584-4126-B6F7-B91B41113196}
@@ -30,10 +21,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Unzipper", "Unzipper\Unzipp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SHOPhonemizer", "SHOPhonemizer\SHOPhonemizer.csproj", "{B9175DE0-CBD3-4902-8465-B152D77651AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CyriljiPhonemizer", "CyriljiPhonemizer\CyriljiPhonemizer.csproj", "{A675BE8C-6BDA-4130-A437-3EE6B64B6AFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CyriljiPhonemizer", "CyriljiPhonemizer\CyriljiPhonemizer.csproj", "{A675BE8C-6BDA-4130-A437-3EE6B64B6AFA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7793257C-054C-4935-A1EF-CAB345E9F6C5} = {7793257C-054C-4935-A1EF-CAB345E9F6C5}
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TetoEnPhonemizer", "TetoEnglishPhonemizer\TetoEnPhonemizer.csproj", "{0B9DB2F5-8121-44F4-B8E4-BACC1ACA28F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +62,10 @@ Global
 		{A675BE8C-6BDA-4130-A437-3EE6B64B6AFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A675BE8C-6BDA-4130-A437-3EE6B64B6AFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A675BE8C-6BDA-4130-A437-3EE6B64B6AFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B9DB2F5-8121-44F4-B8E4-BACC1ACA28F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B9DB2F5-8121-44F4-B8E4-BACC1ACA28F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B9DB2F5-8121-44F4-B8E4-BACC1ACA28F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B9DB2F5-8121-44F4-B8E4-BACC1ACA28F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

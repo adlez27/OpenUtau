@@ -1,9 +1,9 @@
 ﻿using OpenUtau.Api;
-using OpenUtau.Plugin.Builtin;
+using OpenUtau.Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace OpenUtau.Plugins {
+namespace TetoEnPhonemizer {
     public class EnTetoTest : PhonemizerTestBase {
         public EnTetoTest(ITestOutputHelper output) : base(output) { }
         protected override Phonemizer CreatePhonemizer() {
