@@ -5,11 +5,10 @@ using OpenUtau.Plugin.Builtin;
 namespace TetoEnPhonemizer {
     [Phonemizer("Teto English Phonemizer", "EN Teto", "Adlez27", language: "EN")]
     public class TetoEnglishPhonemizer : SyllableBasedPhonemizer {
-        protected override string[] GetVowels() {
-            return "{ @ 3 A aI aU E eI i I O OI oU u U V".Split();
-        }
         protected override string GetDictionaryName() => "cmudict-0_7b.txt";
         protected override IG2p LoadBaseDictionary() => new ArpabetG2p();
+        protected override string[] GetVowels() => "{ @ 3 A aI aU E eI i I O OI oU u U V".Split();
+        protected override string[] GetConsonants() => "p b t d k g tS dZ f v T D s z S Z h m n N l r y w".Split();
         protected override Dictionary<string, string> GetDictionaryPhonemesReplacement() {
             return new Dictionary<string, string> {
                 {"aa", "A" },
@@ -55,18 +54,26 @@ namespace TetoEnPhonemizer {
             };
         }
 
-        protected override List<string> ProcessEnding(Ending ending) {
-            var phonemes = new List<string>();
-
-            phonemes.Add(ending.ToString());
-
-            return phonemes;
-        }
-
         protected override List<string> ProcessSyllable(Syllable syllable) {
             var phonemes = new List<string>();
 
             phonemes.Add(syllable.ToString());
+
+            return phonemes;
+        }
+
+        protected override List<string> ProcessEnding(Ending ending) {
+            if (ending.IsEndingV) {
+                return new List<string> { $"{ending.prevV} -" };
+            }
+            
+            if (ending.IsEndingVCWithOneConsonant) {
+                return new List<string> { $"{ending.prevV} {ending.cc[0]}-" };
+            }
+
+            var phonemes = new List<string>();
+
+            phonemes.Add(ending.ToString());
 
             return phonemes;
         }
