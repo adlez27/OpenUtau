@@ -11,7 +11,7 @@ namespace TetoEnPhonemizer {
         }
 
         [Theory]
-        [InlineData("en_teto",
+        [InlineData("teto",
             new string[] { "test", "words" },
             new string[] { "C4", "C4" },
             new string[] { "", "", },
