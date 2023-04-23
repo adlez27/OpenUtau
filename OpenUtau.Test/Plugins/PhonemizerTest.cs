@@ -64,5 +64,4 @@ namespace OpenUtau.Plugins {
     public class JapaneseVCVPhonemizerTest : PhonemizerTest<JapaneseVCVPhonemizer> { }
     public class KoreanCVCPhonemizerTest : PhonemizerTest<KoreanCVCPhonemizer> { }
     public class KoreanCVVCStandardPronunciationPhonemizerTest : PhonemizerTest<KoreanCVVCStandardPronunciationPhonemizer> { }
-    public class JapaneseCyrillicPhonemizerTest : PhonemizerTest<JapaneseCyrillicPhonemizer> { }
 }
