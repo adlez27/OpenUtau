@@ -231,17 +231,8 @@ namespace OpenUtau.Plugins {
             SameAltsTonesColorsTest("ja_cvvc", aliases, lyrics);
         }
 
-        private void SameAltsTonesColorsTest(string singerName, string[] aliases, string[] lyrics) { 
-            RunPhonemizeTest(singerName, lyrics, 
-                RepeatString(lyrics.Length, ""), 
-                RepeatString(lyrics.Length, "C4"), 
-                RepeatString(lyrics.Length, ""), aliases);
-        }
-
-        private string[] RepeatString(int count, string s) {
-            string[] array = new string[count];
-            Array.Fill(array, s);
-            return array;
+        private void SameAltsTonesColorsTest(string singerName, string[] aliases, string[] lyrics) {
+            SameAltsTonesColorsTest(singerName, lyrics, "", "C4", "", aliases);
         }
     }
 }
