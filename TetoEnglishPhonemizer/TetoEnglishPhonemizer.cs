@@ -1,4 +1,5 @@
-﻿using OpenUtau.Api;
+﻿using System.Diagnostics.Metrics;
+using OpenUtau.Api;
 using OpenUtau.Core.G2p;
 using OpenUtau.Plugin.Builtin;
 
@@ -73,7 +74,21 @@ namespace TetoEnPhonemizer {
 
             var phonemes = new List<string>();
 
-            phonemes.Add(ending.ToString());
+            phonemes.Add($"{ending.prevV} {ending.cc[0]}");
+            
+            var cluster = $"{ending.cc[0]} ";
+            if (ending.cc.Length == 2) {
+                cluster += $"{ending.cc[1]}-";
+            }
+            if (ending.cc.Length == 3) {
+                cluster += $"{ending.cc[1]}{ending.cc[2]}-";
+            }
+            if (HasOto(cluster, ending.tone)) {
+                phonemes.Add(cluster);
+                return phonemes;
+            }
+
+            // construct the cc out of bits
 
             return phonemes;
         }
