@@ -73,9 +73,39 @@ namespace OpenUtau.Core.G2p.Data {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] g2p_de {
+            get {
+                object obj = ResourceManager.GetObject("g2p-de", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] g2p_es {
+            get {
+                object obj = ResourceManager.GetObject("g2p-es", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] g2p_fr {
             get {
                 object obj = ResourceManager.GetObject("g2p-fr", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] g2p_it {
+            get {
+                object obj = ResourceManager.GetObject("g2p-it", resourceCulture);
                 return ((byte[])(obj));
             }
         }

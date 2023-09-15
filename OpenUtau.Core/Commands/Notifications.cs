@@ -115,6 +115,17 @@ namespace OpenUtau.Core {
         public override string ToString() => $"Set track {TrackNo} volume to {Volume}";
     }
 
+    public class PanChangeNotification : UNotification {
+        public double Pan;
+        public int TrackNo;
+        public override bool Silent => true;
+        public PanChangeNotification(int trackNo, double pan) {
+            TrackNo = trackNo;
+            Pan = pan;
+        }
+        public override string ToString() => $"Set track {TrackNo} panning to {Pan}";
+    }
+
     public class SoloTrackNotification : UNotification {
         public readonly int trackNo;
         public readonly bool solo;
@@ -133,6 +144,16 @@ namespace OpenUtau.Core {
     public class SingersRefreshedNotification : UNotification {
         public SingersRefreshedNotification() { }
         public override string ToString() => "Singers refreshed.";
+    }
+
+    public class VoiceColorRemappingNotification : UNotification {
+        public int TrackNo;
+        public bool Validate;
+        public VoiceColorRemappingNotification(int trackNo, bool validate) {
+            TrackNo = trackNo;
+            Validate = validate;
+        }
+        public override string ToString() => "Voice color remapping.";
     }
 
     public class OtoChangedNotification : UNotification {
