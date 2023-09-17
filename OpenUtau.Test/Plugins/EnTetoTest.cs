@@ -46,7 +46,7 @@ namespace TetoEnPhonemizer {
         }
 
         private void SameAltsTonesColorsTest(string singerName, string[] lyrics, string[] aliases) {
-            SameAltsTonesColorsTest(singerName, lyrics, "", "C4", "", aliases);
+            SameAltsTonesColorsTest(singerName, lyrics, aliases, "", "C4", "");
         }
     }
 }

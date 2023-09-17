@@ -18,7 +18,7 @@ namespace CyriljiPhonemizer {
             new string[] { "ら", "い" },
             new string[] { "- ла", "а и", "и -" })]
         public void BasicPhonemizeTest(string singerName, string[] lyrics, string[] aliases) {
-            SameAltsTonesColorsTest(singerName, lyrics, "", "C3", "", aliases);
+            SameAltsTonesColorsTest(singerName, lyrics, aliases, "", "C3", "");
         }
 
         [Theory]
@@ -26,7 +26,7 @@ namespace CyriljiPhonemizer {
             new string[] { "ら", "-" },
             new string[] { "- ла", "а -" })]
         public void SeparatedTailTest(string singerName, string[] lyrics, string[] aliases) {
-            SameAltsTonesColorsTest(singerName, lyrics, "", "C3", "", aliases);
+            SameAltsTonesColorsTest(singerName, lyrics, aliases, "", "C3", "");
         }
 
         [Theory]
@@ -34,7 +34,7 @@ namespace CyriljiPhonemizer {
             new string[] { "と", "きょ" },
             new string[] { "- то", "о кь", "кё", "о -" })]
         public void PalatalizedConsonantTest(string singerName, string[] lyrics, string[] aliases) {
-            SameAltsTonesColorsTest(singerName, lyrics, "", "C3", "", aliases);
+            SameAltsTonesColorsTest(singerName, lyrics, aliases, "", "C3", "");
         }
 
         [Theory]
@@ -75,7 +75,7 @@ namespace CyriljiPhonemizer {
             new string[] { "ん", "や", "ん", "か", "ん", "た", "ん", "ぱ" },
             new string[] { "- Н", "н й", "я", "а нг", "н к", "ка", "а нн", "н т", "та", "а мм", "н п", "па", "а -", })]
         public void ContextualNasalTest(string singerName, string[] lyrics, string[] aliases) {
-            SameAltsTonesColorsTest(singerName, lyrics, "", "C3", "", aliases);
+            SameAltsTonesColorsTest(singerName, lyrics, aliases, "", "C3", "");
         }
     }
 }
