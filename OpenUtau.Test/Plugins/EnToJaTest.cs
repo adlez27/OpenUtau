@@ -231,8 +231,8 @@ namespace OpenUtau.Plugins {
             SameAltsTonesColorsTest("ja_cvvc", aliases, lyrics);
         }
 
-        private void SameAltsTonesColorsTest(string singerName, string[] aliases, string[] lyrics) {
-            SameAltsTonesColorsTest(singerName, lyrics, "", "C4", "", aliases);
+        private void SameAltsTonesColorsTest(string singerName, string[] aliases, string[] lyrics) { 
+            SameAltsTonesColorsTest(singerName, lyrics, aliases, "", "C4", "");
         }
     }
 }

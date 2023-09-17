@@ -97,7 +97,7 @@ namespace OpenUtau.Plugins {
             return result;
         }
 
-        protected void SameAltsTonesColorsTest(string singerName, string[] lyrics, string alt, string tone, string color, string[] aliases ) {
+        protected void SameAltsTonesColorsTest(string singerName, string[] lyrics, string[] aliases, string alt, string tone, string color) {
             RunPhonemizeTest(singerName, lyrics,
                 RepeatString(lyrics.Length, alt),
                 RepeatString(lyrics.Length, tone),

@@ -13,12 +13,9 @@ namespace OpenUtau.Plugins {
         [Theory]
         [InlineData("en_vccv",
             new string[] { "test", "words" },
-            new string[] { "", "", },
-            new string[] { "C4", "C4" },
-            new string[] { "", "", },
             new string[] { "-te", "es-", "st", "w3", "3d-", "dz-" })]
-        public void BasicPhonemizingTest(string singerName, string[] lyrics, string[] alts, string[] tones, string[] colors, string[] aliases) {
-            RunPhonemizeTest(singerName, lyrics, alts, tones, colors, aliases);
+        public void BasicPhonemizingTest(string singerName, string[] lyrics, string[] aliases) {
+            SameAltsTonesColorsTest(singerName, lyrics, aliases, "", "C4", "");
         }
     }
 }
