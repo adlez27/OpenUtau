@@ -44,12 +44,7 @@ namespace OpenUtau.Plugins {
         }
 
         void RunPhonemizeTest(string singerName, List<Phonemizer.Note[]> groups, string[] aliases) {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var basePath = Path.Join(dir, "Files");
-            var file = Path.Join(basePath, singerName, "character.txt");
-
-            var voicebank = new Voicebank() { File = file, BasePath = dir };
+            var voicebank = GetVoicebank(singerName);
             VoicebankLoader.LoadVoicebank(voicebank);
             var singer = new ClassicSinger(voicebank);
             singer.EnsureLoaded();
@@ -176,6 +171,15 @@ namespace OpenUtau.Plugins {
             string[] array = new string[count];
             Array.Fill(array, s);
             return array;
+        }
+
+        protected virtual Voicebank GetVoicebank(string singerName) {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var basePath = Path.Join(dir, "Files");
+            var file = Path.Join(basePath, singerName, "character.txt");
+
+            return new Voicebank() { File = file, BasePath = dir };
         }
     }
 }
