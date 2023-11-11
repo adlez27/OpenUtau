@@ -1,0 +1,19 @@
+﻿text_file_encoding: utf-8
+portrait_opacity: 0.5
+default_phonemizer: CyriljiPhonemizer.JapaneseCyrillicPhonemizer
+subbanks:
+- color: ''
+  prefix: ''
+  suffix: ''
+  tone_ranges:
+  - C1-B3
+- color: ''
+  prefix: ''
+  suffix: _H
+  tone_ranges:
+  - C4-B7
+- color: Power
+  prefix: ''
+  suffix: _P
+  tone_ranges:
+  - C1-B7
