@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
+        <TargetFramework>net6.0-windows</TargetFramework>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(OS)' != 'Windows_NT' ">
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
+    <PackageReference Include="xunit" Version="2.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenUtau.Core\OpenUtau.Core.csproj" />
+    <ProjectReference Include="..\OpenUtau.Plugin.Builtin\OpenUtau.Plugin.Builtin.csproj" />
+    <ProjectReference Include="..\OpenUtau.Test\OpenUtau.Test.csproj" />
+  </ItemGroup>
+
+    <ItemGroup>
+        <None Include="absidee\**" CopyToOutputDirectory="PreserveNewest" LinkBase="absidee\" />
+    </ItemGroup>
+
+</Project>

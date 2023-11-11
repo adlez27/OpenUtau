@@ -1,0 +1,24 @@
+﻿text_file_encoding: shift_jis
+portrait_opacity: 0.67
+portrait_height: 0
+subbanks:
+- color: ""
+  prefix: ""
+  suffix: _Eb5
+  tone_ranges:
+  - D5-B7
+- color: ""
+  prefix: ""
+  suffix: _Bb4
+  tone_ranges:
+  - E4-C#5
+- color: ""
+  prefix: ""
+  suffix: _G4
+  tone_ranges:
+  - C1-D#4
+- color: Soft
+  prefix: ""
+  suffix: _S
+  tone_ranges:
+  - C1-B7
