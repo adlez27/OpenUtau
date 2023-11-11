@@ -370,7 +370,7 @@ namespace CyriljiPhonemizer {
                 }
                 int tone = (i == 0 && prevs != null && prevs.Length > 0)
                     ? prevs.Last().tone : notes[noteIndex].tone;
-                if (singer.TryGetMappedOto($"{phoneme.phoneme}{alt}", note.tone + toneShift, color, out var oto)) {
+                if (singer.TryGetMappedOto($"{phoneme.phoneme}{(alt == "0" ? "" : alt)}", note.tone + toneShift, color, out var oto)) {
                     phoneme.phoneme = oto.Alias;
                 } 
                 phonemes[i] = phoneme;
