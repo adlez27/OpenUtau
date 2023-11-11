@@ -27,6 +27,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenUtau.Plugin.Builtin", "OpenUtau.Plugin.Builtin\OpenUtau.Plugin.Builtin.csproj", "{D24740E1-CC43-4226-A573-59C013FE50A2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DanishPhonemizer", "DanishVCCVPhonemizer\DanishPhonemizer.csproj", "{F7A791C8-11F9-4477-8CE5-E2F408BA8D08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CyriljiPhonemizer", "CyriljiPhonemizer\CyriljiPhonemizer.csproj", "{7200D9DE-28E8-4E89-A881-1FE8574037AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
