@@ -18,6 +18,10 @@
     <ProjectReference Include="..\OpenUtau.Test\OpenUtau.Test.csproj" />
   </ItemGroup>
 
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+        <Exec Command="copy &quot;$(TargetDir)$(TargetName).dll&quot; &quot;$(SolutionDir)OpenUtau\bin\Debug\net6.0-windows\win-x64\Plugins\$(TargetName).dll&quot;" />
+    </Target>
+
     <ItemGroup>
         <None Include="absidee\**" CopyToOutputDirectory="PreserveNewest" LinkBase="absidee\" />
     </ItemGroup>
