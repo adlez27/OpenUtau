@@ -6,7 +6,7 @@ using OpenUtau.Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace CyriljiPhonemizer {
+namespace CyriljiPhonemizer.Test {
     public class CyriljiTest : PhonemizerTestBase {
         public CyriljiTest(ITestOutputHelper output) : base(output) { }
         protected override Phonemizer CreatePhonemizer() {
