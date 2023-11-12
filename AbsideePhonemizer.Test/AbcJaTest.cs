@@ -4,7 +4,7 @@ using OpenUtau.Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AbsideePhonemizer {
+namespace AbsideePhonemizer.Test {
     public class AbcJaTest : PhonemizerTestBase {
         public AbcJaTest(ITestOutputHelper output) : base(output) { }
 

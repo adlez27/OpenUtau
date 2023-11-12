@@ -4,7 +4,7 @@ using Xunit;
 using Xunit.Abstractions;
 using static OpenUtau.Api.Phonemizer;
 
-namespace AbsideePhonemizer {
+namespace AbsideePhonemizer.Test {
     public class AbcUtilTest {
         ClassicSinger LoadVoicebank() {
             var voicebank = AbsideePhonemizerUtil.GetVoicebank("");

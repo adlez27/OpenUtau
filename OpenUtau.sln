@@ -36,6 +36,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbsideePhonemizer", "Abside
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CyriljiPhonemizer.Test", "CyriljiPhonemizer.Test\CyriljiPhonemizer.Test.csproj", "{70BDAC48-1800-490F-B1FE-D8A2A609996B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AbsideePhonemizer.Test", "AbsideePhonemizer.Test\AbsideePhonemizer.Test.csproj", "{817F180A-0BDE-4128-AD4F-ABB08AB96D0B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,6 +80,10 @@ Global
 		{70BDAC48-1800-490F-B1FE-D8A2A609996B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70BDAC48-1800-490F-B1FE-D8A2A609996B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70BDAC48-1800-490F-B1FE-D8A2A609996B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{817F180A-0BDE-4128-AD4F-ABB08AB96D0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{817F180A-0BDE-4128-AD4F-ABB08AB96D0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{817F180A-0BDE-4128-AD4F-ABB08AB96D0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{817F180A-0BDE-4128-AD4F-ABB08AB96D0B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
