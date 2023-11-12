@@ -212,6 +212,7 @@ namespace AbsideePhonemizer {
             var phonemes = new List<Phoneme>();
             int totalDuration = notes.Sum(n => n.duration);
 
+            // CV
             if (isFirst) {
                 phonemes.Add(new Phoneme {
                     phoneme = $"- {lyric}"
@@ -228,18 +229,23 @@ namespace AbsideePhonemizer {
                         });
                     }
                 } else {
+                    // if prev can do VCV, use VCV
+                    // otherwise plain CV
                     phonemes.Add(new Phoneme {
                         phoneme = lyric
                     });
                 }
             }
 
+            // VC
             if (isLast && lyric != "-" && lyric != "hh") {
                 phonemes.Add(new Phoneme {
                     phoneme = $"{symbols[lyric].Suffix} -",
                     position = totalDuration - Math.Min(totalDuration / 2, 120)
                 });
             } else if (lyric != "-" && lyric != "hh" && !nextIsVowel) {
+                // if next can do VCV, do not insert
+                // otherwise insert VC
                 var vc = $"{symbols[lyric].Suffix} {symbols[nextLyric].Prefix}";
 
                 int vcLength = 120;
@@ -255,11 +261,9 @@ namespace AbsideePhonemizer {
                 });
             }
 
-            // Assign pitch/color suffixes
             int noteIndex = 0;
             for (int i = 0; i < phonemes.Count; i++) {
                 var attr = note.phonemeAttributes?.FirstOrDefault(attr => attr.index == i) ?? default;
-                string alt = attr.alternate?.ToString() ?? string.Empty;
                 string color = attr.voiceColor;
                 int toneShift = attr.toneShift;
                 var phoneme = phonemes[i];
@@ -268,9 +272,8 @@ namespace AbsideePhonemizer {
                 }
                 int tone = (i == 0 && prevs != null && prevs.Length > 0)
                     ? prevs.Last().tone : notes[noteIndex].tone;
-                if (singer.TryGetMappedOto($"{phoneme.phoneme}{(alt == "0" ? string.Empty : alt)}", note.tone + toneShift, color, out var oto)) { // bug caued by alt = 0 as suffix
-                    phoneme.phoneme = oto.Alias;
-                }
+
+                phoneme.phoneme = AbsideePhonemizerUtil.AssignSuffix(singer, phoneme.phoneme, note.tone + toneShift, color);
                 phonemes[i] = phoneme;
             }
 

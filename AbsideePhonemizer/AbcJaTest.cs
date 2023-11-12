@@ -19,10 +19,10 @@ namespace AbsideePhonemizer {
         [Theory]
         [InlineData(
             new string[] { "ら", "ら" },
-            new string[] { "- ら", "a r", "ら", "a -" })]
+            new string[] { "- ら_G3", "a r_G3", "ら_G3", "a -_G3" })]
         [InlineData(
             new string[] { "ら", "い" },
-            new string[] { "- ら", "a い", "i -" })]
+            new string[] { "- ら_G3", "a い_G3", "i -_G3" })]
         public void BasicPhonemizeTest(string[] lyrics, string[] aliases) {
             SameAltsTonesColorsTest("", lyrics, aliases, "", "C4", "");
         }
@@ -30,10 +30,10 @@ namespace AbsideePhonemizer {
         [Theory]
         [InlineData(
             new string[] { "ら", "-" },
-            new string[] { "- ら", "a -" })]
+            new string[] { "- ら_G3", "a -_G3" })]
         [InlineData(
             new string[] { "ら", "hh" },
-            new string[] { "- ら", "a hh" })]
+            new string[] { "- ら_G3", "a hh_G3" })]
         public void SeparatedTailTest(string[] lyrics, string[] aliases) {
             SameAltsTonesColorsTest("", lyrics, aliases, "", "C4", "");
         }
@@ -41,7 +41,7 @@ namespace AbsideePhonemizer {
         [Theory]
         [InlineData(
             new string[] { "ん", "や", "ん", "か", "ん", "た", "ん", "ぱ" },
-            new string[] { "- ん", "n y", "や", "a nng", "n k", "か", "a nn", "n t", "た", "a mm", "n p", "ぱ", "a -", })]
+            new string[] { "- ん_G3", "n y_G3", "や_G3", "a nng_G3", "n k_G3", "か_G3", "a nn_G3", "n t_G3", "た_G3", "a mm_G3", "n p_G3", "ぱ_G3", "a -_G3", })]
         public void ContextualNasalTest(string[] lyrics, string[] aliases) {
             SameAltsTonesColorsTest("", lyrics, aliases, "", "C3", "");
         }
@@ -49,8 +49,25 @@ namespace AbsideePhonemizer {
         [Fact]
         public void ColorTest() {
             RunPhonemizeTest("", new NoteParams[] {
-                new NoteParams { lyric = "ら", hint = "", tone = "C4", phonemes = SamePhonemeParams(2, 0, 0, "Soft") }
-            }, new string[] { "- ら_S", "a -_S" });
+                new NoteParams { lyric = "ら", hint = "", tone = "C4", phonemes = new PhonemeParams[] { 
+                    new PhonemeParams { alt = 0, color = "", shift = 0},
+                    new PhonemeParams { alt = 0, color = "Soft", shift = 0},
+                } }
+            }, new string[] { "- ら_G3", "a -_S" });
+        }
+
+        [Fact]
+        public void PitchTest() {
+            RunPhonemizeTest("", new NoteParams[] {
+                new NoteParams { lyric = "あ", hint = "", tone = "C4", phonemes = new PhonemeParams[] {
+                    new PhonemeParams { alt = 0, color = "", shift = 0},
+                    new PhonemeParams { alt = 0, color = "", shift = 12},
+                } },
+                new NoteParams { lyric = "か", hint = "", tone = "C4", phonemes = new PhonemeParams[] {
+                    new PhonemeParams { alt = 0, color = "", shift = 0},
+                    new PhonemeParams { alt = 0, color = "", shift = 0},
+                } }
+            }, new string[] { "- あ_G3", "a k_Bb4", "か_G3", "a -_G3" });
         }
     }
 }
