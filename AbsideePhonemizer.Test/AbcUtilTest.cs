@@ -34,16 +34,26 @@ namespace AbsideePhonemizer.Test {
         [InlineData("a ki", 0, false)] // diff alt
         [InlineData("a ki", 1, false)] // diff color
         [InlineData("a ki", 2, false)] // diff pitch
-        [InlineData("a ka", 3, false)] // no oto
-        [InlineData("a ki", 4, true)]
+        [InlineData("a ki", 3, false)] // diff shift
+        [InlineData("a ka", 4, false)] // no oto
+        [InlineData("a ki", 4, true)] // all same
+        [InlineData("a ki", 5, true)] // shift within range
+        [InlineData("a き", 0, false)] // diff alt
+        [InlineData("a き", 1, false)] // diff color
+        [InlineData("a き", 2, false)] // diff pitch
+        [InlineData("a き", 3, false)] // diff shift
+        [InlineData("a か", 4, false)] // no oto
+        [InlineData("a き", 4, true)] // all same
+        [InlineData("a き", 5, true)] // shift within range
         public void CanVCVTest(string alias, int caseNum, bool result) {
             Note left = new Note { tone = 60, phonemeAttributes = new PhonemeAttributes[] { new PhonemeAttributes { index = 0 } } };
             Note[] right = new Note[] {
                 new Note { tone = 60, phonemeAttributes = new PhonemeAttributes[] { new PhonemeAttributes { index = 0, alternate = 1 } } },
                 new Note { tone = 60, phonemeAttributes = new PhonemeAttributes[] { new PhonemeAttributes { index = 0, voiceColor = "Soft" } } },
+                new Note { tone = 72, phonemeAttributes = new PhonemeAttributes[] { new PhonemeAttributes { index = 0 } } },
                 new Note { tone = 60, phonemeAttributes = new PhonemeAttributes[] { new PhonemeAttributes { index = 0, toneShift = 12 } } },
                 new Note { tone = 60, phonemeAttributes = new PhonemeAttributes[] { new PhonemeAttributes { index = 0 } } },
-                new Note { tone = 60, phonemeAttributes = new PhonemeAttributes[] { new PhonemeAttributes { index = 0 } } }
+                new Note { tone = 60, phonemeAttributes = new PhonemeAttributes[] { new PhonemeAttributes { index = 0, toneShift = -1 } } }
             };
 
             Assert.Equal(result, AbsideePhonemizerUtil.CanVCV(alias, left, right[caseNum], LoadVoicebank()));

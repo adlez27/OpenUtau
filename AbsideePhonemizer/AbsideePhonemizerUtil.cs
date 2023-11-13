@@ -30,8 +30,11 @@ namespace AbsideePhonemizer {
         }
 
         public static bool CanVCV(string alias, Note left, Note right, USinger singer) {
-            var leftAttr = left.phonemeAttributes.MaxBy(a => a.index);
-            var rightAttr = right.phonemeAttributes.MinBy(a => a.index);
+            var leftHasAttrs = left.phonemeAttributes.Length > 0;
+            var rightHasAttrs = right.phonemeAttributes.Length > 0;
+
+            var leftAttr = leftHasAttrs ? left.phonemeAttributes.MaxBy(a => a.index) : new PhonemeAttributes { index = 0, toneShift = 0, voiceColor = null};
+            var rightAttr = rightHasAttrs ? right.phonemeAttributes.MinBy(a => a.index) : new PhonemeAttributes { index = 0, toneShift = 0, voiceColor = null};
 
             // User can force CVVC with alternates
             if (leftAttr.alternate != rightAttr.alternate) { return false; }

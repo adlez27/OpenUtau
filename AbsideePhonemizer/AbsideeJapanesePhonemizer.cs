@@ -229,11 +229,16 @@ namespace AbsideePhonemizer {
                         });
                     }
                 } else {
-                    // if prev can do VCV, use VCV
-                    // otherwise plain CV
-                    phonemes.Add(new Phoneme {
-                        phoneme = lyric
-                    });
+                    var vcv = $"{symbols[prevLyric].Suffix} {lyric}";
+                    if (AbsideePhonemizerUtil.CanVCV(vcv, (Note)prev, note, singer)) {
+                        phonemes.Add(new Phoneme {
+                            phoneme = vcv
+                        });
+                    } else {
+                        phonemes.Add(new Phoneme {
+                            phoneme = lyric
+                        });
+                    }
                 }
             }
 
@@ -244,21 +249,22 @@ namespace AbsideePhonemizer {
                     position = totalDuration - Math.Min(totalDuration / 2, 120)
                 });
             } else if (lyric != "-" && lyric != "hh" && !nextIsVowel) {
-                // if next can do VCV, do not insert
-                // otherwise insert VC
-                var vc = $"{symbols[lyric].Suffix} {symbols[nextLyric].Prefix}";
+                var vcv = $"{symbols[lyric].Suffix} {nextLyric}";
+                if (!AbsideePhonemizerUtil.CanVCV(vcv, note, (Note)next, singer)) {
+                    var vc = $"{symbols[lyric].Suffix} {symbols[nextLyric].Prefix}";
 
-                int vcLength = 120;
-                var attr = nextNeighbour.Value.phonemeAttributes?.FirstOrDefault(attr => attr.index == 0) ?? default;
-                if (singer.TryGetMappedOto(nextLyric, nextNeighbour.Value.tone + attr.toneShift, attr.voiceColor, out var oto)) {
-                    vcLength = MsToTick(oto.Preutter);
+                    int vcLength = 120;
+                    var attr = nextNeighbour.Value.phonemeAttributes?.FirstOrDefault(attr => attr.index == 0) ?? default;
+                    if (singer.TryGetMappedOto(nextLyric, nextNeighbour.Value.tone + attr.toneShift, attr.voiceColor, out var oto)) {
+                        vcLength = MsToTick(oto.Preutter);
+                    }
+                    vcLength = Convert.ToInt32(Math.Min(totalDuration / 2, vcLength * (attr.consonantStretchRatio ?? 1)));
+
+                    phonemes.Add(new Phoneme {
+                        phoneme = vc,
+                        position = totalDuration - vcLength
+                    });
                 }
-                vcLength = Convert.ToInt32(Math.Min(totalDuration / 2, vcLength * (attr.consonantStretchRatio ?? 1)));
-
-                phonemes.Add(new Phoneme {
-                    phoneme = vc,
-                    position = totalDuration - vcLength
-                });
             }
 
             int noteIndex = 0;

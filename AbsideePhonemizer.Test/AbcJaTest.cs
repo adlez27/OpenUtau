@@ -1,6 +1,7 @@
 ﻿using OpenUtau.Api;
 using OpenUtau.Classic;
 using OpenUtau.Plugins;
+using SharpCompress;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,35 +16,39 @@ namespace AbsideePhonemizer.Test {
         protected override Voicebank GetVoicebank(string singerName) {
             return AbsideePhonemizerUtil.GetVoicebank(singerName);
         }
+         
+        private void SameAltsTonesColorsTest(string[] lyrics, string[] aliases) {
+            SameAltsTonesColorsTest("", lyrics, aliases.Select(a => $"{a}_G3").ToArray(), "", "C4", "");
+        }
 
         [Theory]
         [InlineData(
             new string[] { "ら", "ら" },
-            new string[] { "- ら_G3", "a r_G3", "ら_G3", "a -_G3" })]
+            new string[] { "- ら", "a r", "ら", "a -" })]
         [InlineData(
             new string[] { "ら", "い" },
-            new string[] { "- ら_G3", "a い_G3", "i -_G3" })]
+            new string[] { "- ら", "a い", "i -" })]
         public void BasicPhonemizeTest(string[] lyrics, string[] aliases) {
-            SameAltsTonesColorsTest("", lyrics, aliases, "", "C4", "");
+            SameAltsTonesColorsTest(lyrics, aliases);
         }
 
         [Theory]
         [InlineData(
             new string[] { "ら", "-" },
-            new string[] { "- ら_G3", "a -_G3" })]
+            new string[] { "- ら", "a -" })]
         [InlineData(
             new string[] { "ら", "hh" },
-            new string[] { "- ら_G3", "a hh_G3" })]
+            new string[] { "- ら", "a hh" })]
         public void SeparatedTailTest(string[] lyrics, string[] aliases) {
-            SameAltsTonesColorsTest("", lyrics, aliases, "", "C4", "");
+            SameAltsTonesColorsTest(lyrics, aliases);
         }
 
         [Theory]
         [InlineData(
-            new string[] { "ん", "や", "ん", "か", "ん", "た", "ん", "ぱ" },
-            new string[] { "- ん_G3", "n y_G3", "や_G3", "a nng_G3", "n k_G3", "か_G3", "a nn_G3", "n t_G3", "た_G3", "a mm_G3", "n p_G3", "ぱ_G3", "a -_G3", })]
+            new string[] { "ん", "ゆ", "ん", "か", "ん", "た", "ん", "ぱ" },
+            new string[] { "- ん", "n y", "ゆ", "u nng", "n k", "か", "a nn", "n t", "た", "a mm", "n p", "ぱ", "a -", })]
         public void ContextualNasalTest(string[] lyrics, string[] aliases) {
-            SameAltsTonesColorsTest("", lyrics, aliases, "", "C3", "");
+            SameAltsTonesColorsTest(lyrics, aliases);
         }
 
         [Fact]
@@ -68,6 +73,11 @@ namespace AbsideePhonemizer.Test {
                     new PhonemeParams { alt = 0, color = "", shift = 0},
                 } }
             }, new string[] { "- あ_G3", "a k_Bb4", "か_G3", "a -_G3" });
+        }
+
+        [Fact]
+        public void PrioritizeVCVTest() {
+            SameAltsTonesColorsTest(new string[] { "あ", "き"}, new string[] { "- あ", "a き", "i -" });
         }
     }
 }
