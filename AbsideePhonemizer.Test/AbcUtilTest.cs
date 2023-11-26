@@ -6,8 +6,15 @@ using static OpenUtau.Api.Phonemizer;
 
 namespace AbsideePhonemizer.Test {
     public class AbcUtilTest {
+        private AbsideePhonemizerUtil util;
+        public AbcUtilTest() {
+            util = new AbsideePhonemizerUtil();
+            util.Singer = LoadVoicebank();
+        }
+
         ClassicSinger LoadVoicebank() {
-            var voicebank = AbsideePhonemizerUtil.GetVoicebank("");
+            var voicebank = AbsideePhonemizerUtil.GetVoicebank();
+            VoicebankLoader.IsTest = true;
             VoicebankLoader.LoadVoicebank(voicebank);
             var singer = new ClassicSinger(voicebank);
             singer.EnsureLoaded();
@@ -19,7 +26,7 @@ namespace AbsideePhonemizer.Test {
         [InlineData("a", "Soft", "a_S")]
         [InlineData("a", "asdf", "a_G3")]
         public void ColorSuffixTest(string alias,  string color, string result) {
-            Assert.Equal(result, AbsideePhonemizerUtil.AssignSuffix(LoadVoicebank(), alias, 60, color));
+            Assert.Equal(result, util.AssignSuffix(alias, 60, color));
         }
 
         [Theory]
@@ -27,7 +34,7 @@ namespace AbsideePhonemizer.Test {
         [InlineData("a", "A4", "a_Bb4")]
         [InlineData("a", "G5", "a_Eb5")]
         public void PitchSuffixTest(string alias, string tone, string result) {
-            Assert.Equal(result, AbsideePhonemizerUtil.AssignSuffix(LoadVoicebank(), alias, MusicMath.NameToTone(tone), ""));
+            Assert.Equal(result, util.AssignSuffix(alias, MusicMath.NameToTone(tone), ""));
         }
 
         [Theory]
@@ -56,7 +63,7 @@ namespace AbsideePhonemizer.Test {
                 new Note { tone = 60, phonemeAttributes = new PhonemeAttributes[] { new PhonemeAttributes { index = 0, toneShift = -1 } } }
             };
 
-            Assert.Equal(result, AbsideePhonemizerUtil.CanVCV(alias, left, right[caseNum], LoadVoicebank()));
+            Assert.Equal(result, util.CanVCV(alias, left, right[caseNum]));
         }
     }
 }

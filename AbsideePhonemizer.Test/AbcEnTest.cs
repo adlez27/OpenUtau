@@ -13,7 +13,7 @@ namespace AbsideePhonemizer.Test {
         }
 
         protected override Voicebank GetVoicebank(string singerName) {
-            return AbsideePhonemizerUtil.GetVoicebank(singerName);
+            return AbsideePhonemizerUtil.GetVoicebank();
         }
 
         [Theory]

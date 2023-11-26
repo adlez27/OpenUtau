@@ -10,8 +10,12 @@ using OpenUtau.Core.Ustx;
 using static OpenUtau.Api.Phonemizer;
 
 namespace AbsideePhonemizer {
-    public static class AbsideePhonemizerUtil {
-        public static Voicebank GetVoicebank(string _) {
+    public class AbsideePhonemizerUtil {
+        private USinger singer;
+
+        public USinger Singer { get => singer; set => singer = value; }
+
+        public static Voicebank GetVoicebank() {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var file = Path.Join(dir, "absidee", "character.txt");
@@ -19,7 +23,7 @@ namespace AbsideePhonemizer {
             return new Voicebank() { File = file, BasePath = dir };
         }
 
-        public static string AssignSuffix(USinger singer, string alias, int tone, string color) {
+        public string AssignSuffix(string alias, int tone, string color) {
             if (color == "Soft") {
                 return $"{alias}_S";
             } else {
@@ -29,7 +33,7 @@ namespace AbsideePhonemizer {
             }
         }
 
-        public static bool CanVCV(string alias, Note left, Note right, USinger singer) {
+        public bool CanVCV(string alias, Note left, Note right) {
             var leftHasAttrs = left.phonemeAttributes.Length > 0;
             var rightHasAttrs = right.phonemeAttributes.Length > 0;
 

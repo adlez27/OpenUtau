@@ -15,6 +15,7 @@ namespace AbsideePhonemizer {
         private Dictionary<string, Symbol> symbols;
 
         public AbsideeJapanesePhonemizer() {
+            util = new AbsideePhonemizerUtil();
             symbols = new Dictionary<string, Symbol> {
                 ["あ"] = new Symbol { Prefix = "", Suffix = "a", Nasal = "N" },
                 ["い"] = new Symbol { Prefix = "", Suffix = "i", Nasal = "N" },
@@ -191,8 +192,13 @@ namespace AbsideePhonemizer {
             };
         }
 
+        private AbsideePhonemizerUtil util;
+
         private USinger? singer;
-        public override void SetSinger(USinger singer) => this.singer = singer;
+        public override void SetSinger(USinger singer) {
+            this.singer = singer;
+            util.Singer = singer;
+        }
 
         public override Result Process(Note[] notes, Note? prev, Note? next, Note? prevNeighbour, Note? nextNeighbour, Note[] prevs) {
             var note = notes[0];
@@ -230,7 +236,7 @@ namespace AbsideePhonemizer {
                     }
                 } else {
                     var vcv = $"{symbols[prevLyric].Suffix} {lyric}";
-                    if (AbsideePhonemizerUtil.CanVCV(vcv, (Note)prev, note, singer)) {
+                    if (util.CanVCV(vcv, (Note)prev, note)) {
                         phonemes.Add(new Phoneme {
                             phoneme = vcv
                         });
@@ -250,7 +256,7 @@ namespace AbsideePhonemizer {
                 });
             } else if (lyric != "-" && lyric != "hh" && !nextIsVowel) {
                 var vcv = $"{symbols[lyric].Suffix} {nextLyric}";
-                if (!AbsideePhonemizerUtil.CanVCV(vcv, note, (Note)next, singer)) {
+                if (!util.CanVCV(vcv, note, (Note)next)) {
                     var vc = $"{symbols[lyric].Suffix} {symbols[nextLyric].Prefix}";
 
                     int vcLength = 120;
@@ -279,7 +285,7 @@ namespace AbsideePhonemizer {
                 int tone = (i == 0 && prevs != null && prevs.Length > 0)
                     ? prevs.Last().tone : notes[noteIndex].tone;
 
-                phoneme.phoneme = AbsideePhonemizerUtil.AssignSuffix(singer, phoneme.phoneme, note.tone + toneShift, color);
+                phoneme.phoneme = util.AssignSuffix(phoneme.phoneme, note.tone + toneShift, color);
                 phonemes[i] = phoneme;
             }
 

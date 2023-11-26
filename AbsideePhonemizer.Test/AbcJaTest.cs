@@ -1,4 +1,6 @@
-﻿using OpenUtau.Api;
+﻿using System.Reflection;
+using System.Text;
+using OpenUtau.Api;
 using OpenUtau.Classic;
 using OpenUtau.Plugins;
 using SharpCompress;
@@ -13,10 +15,10 @@ namespace AbsideePhonemizer.Test {
             return new AbsideeJapanesePhonemizer();
         }
 
-        protected override Voicebank GetVoicebank(string singerName) {
-            return AbsideePhonemizerUtil.GetVoicebank(singerName);
+        protected override Voicebank GetVoicebank(string _) {
+            return AbsideePhonemizerUtil.GetVoicebank();
         }
-         
+
         private void SameAltsTonesColorsTest(string[] lyrics, string[] aliases) {
             SameAltsTonesColorsTest("", lyrics, aliases.Select(a => $"{a}_G3").ToArray(), "", "C4", "");
         }
