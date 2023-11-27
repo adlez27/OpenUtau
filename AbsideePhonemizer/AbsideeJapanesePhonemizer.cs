@@ -273,23 +273,7 @@ namespace AbsideePhonemizer {
                 }
             }
 
-            int noteIndex = 0;
-            for (int i = 0; i < phonemes.Count; i++) {
-                var attr = note.phonemeAttributes?.FirstOrDefault(attr => attr.index == i) ?? default;
-                string color = attr.voiceColor;
-                int toneShift = attr.toneShift;
-                var phoneme = phonemes[i];
-                while (noteIndex < notes.Length - 1 && notes[noteIndex].position - note.position < phoneme.position) {
-                    noteIndex++;
-                }
-                int tone = (i == 0 && prevs != null && prevs.Length > 0)
-                    ? prevs.Last().tone : notes[noteIndex].tone;
-
-                phoneme.phoneme = util.AssignSuffix(phoneme.phoneme, note.tone + toneShift, color);
-                phonemes[i] = phoneme;
-            }
-
-            return new Result { phonemes = phonemes.ToArray() };
+            return new Result { phonemes = util.AssignSuffixes(phonemes, notes, prevs) };
         }
     }
 }

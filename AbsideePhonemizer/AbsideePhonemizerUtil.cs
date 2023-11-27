@@ -7,6 +7,7 @@ using System.Text;
 using OpenUtau.Api;
 using OpenUtau.Classic;
 using OpenUtau.Core.Ustx;
+using WanaKanaNet;
 using static OpenUtau.Api.Phonemizer;
 
 namespace AbsideePhonemizer {
@@ -23,14 +24,57 @@ namespace AbsideePhonemizer {
             return new Voicebank() { File = file, BasePath = dir };
         }
 
-        public string AssignSuffix(string alias, int tone, string color) {
-            if (color == "Soft") {
-                return $"{alias}_S";
-            } else {
-                var subbanks = (List<USubbank>)singer.Subbanks;
-                var subbank = subbanks.Find(subbank => string.IsNullOrEmpty(subbank.Color) && subbank.toneSet.Contains(tone));
-                return $"{alias}{subbank.Suffix}";
+        public Phoneme[] AssignSuffixes(List<Phoneme> phonemes, Note[] notes, Note[] prevs) {
+            var adjustedPhonemes = new List<Phoneme>();
+            
+            var note = notes[0];
+            int noteIndex = 0;
+            for (int i = 0; i < phonemes.Count; i++) {
+                var attr = note.phonemeAttributes?.FirstOrDefault(attr => attr.index == i) ?? default;
+                string color = attr.voiceColor;
+                int toneShift = attr.toneShift;
+                var phoneme = phonemes[i];
+                while (noteIndex < notes.Length - 1 && notes[noteIndex].position - note.position < phoneme.position) {
+                    noteIndex++;
+                }
+                int tone = (i == 0 && prevs != null && prevs.Length > 0)
+                    ? prevs.Last().tone : notes[noteIndex].tone;
+
+                adjustedPhonemes.AddRange(AssignSuffix(phoneme, note.tone + toneShift, color));
             }
+            return adjustedPhonemes.ToArray();
+        }
+
+        public List<Phoneme> AssignSuffix(Phoneme phoneme, int tone, string color) {
+            if (color == "Soft") {
+                phoneme.phoneme += "_S";
+                return new List<Phoneme> { phoneme };
+            }
+
+            var subbanks = (List<USubbank>)singer.Subbanks;
+            var subbank = subbanks.Find(subbank => string.IsNullOrEmpty(subbank.Color) && subbank.toneSet.Contains(tone));
+            var alias = phoneme.phoneme + subbank.Suffix;
+            if (subbank.Suffix != "_Eb5" || (subbank.Suffix == "_Eb5" && singer.TryGetOto(alias, out _))) {
+                phoneme.phoneme = alias;
+                return new List<Phoneme> { phoneme };
+            } 
+
+            var aliasEnd = phoneme.phoneme.Last().ToString();
+            phoneme.phoneme += "_Bb4";
+            if (aliasEnd == "-") {
+                return new List<Phoneme> { phoneme };
+            }
+
+            var vowel = WanaKana.IsHiragana(aliasEnd) ? WanaKana.ToRomaji(aliasEnd).Last().ToString() : aliasEnd;
+            var split = new List<Phoneme> { 
+                phoneme,
+                new Phoneme {
+                    phoneme = $"{vowel}_Eb5",
+                    position = phoneme.position + 10,
+                    attributes = phoneme.attributes
+                }
+            };
+            return split;
         }
 
         public bool CanVCV(string alias, Note left, Note right) {

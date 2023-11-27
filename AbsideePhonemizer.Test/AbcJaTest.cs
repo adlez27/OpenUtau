@@ -81,5 +81,52 @@ namespace AbsideePhonemizer.Test {
         public void PrioritizeVCVTest() {
             SameAltsTonesColorsTest(new string[] { "あ", "き"}, new string[] { "- あ", "a き", "i -" });
         }
+
+        [Theory]
+        [InlineData("", "F4", 0,
+            new string[] { "- か_Bb4", "a -_Bb4" })]
+        [InlineData("", "F4", -1,
+            new string[] { "- か_Bb4", "a -_Bb4" })]
+        [InlineData("", "F4", 1,
+            new string[] {"- か_Bb4", "a -_Bb4" })]
+        [InlineData("", "F4", -12,
+            new string[] {"- か_G3", "a -_G3" })]
+        [InlineData("", "F4", 12,
+            new string[] { "- か_Bb4", "a_Eb5", "a -_Bb4" })]
+        [InlineData("", "F5", 0,
+            new string[] { "- か_Bb4", "a_Eb5", "a -_Bb4" })]
+        [InlineData("", "F5", -1,
+            new string[] { "- か_Bb4", "a_Eb5", "a -_Bb4" })]
+        [InlineData("", "F5", 1,
+            new string[] { "- か_Bb4", "a_Eb5", "a -_Bb4" })]
+        [InlineData("", "F5", -12,
+            new string[] { "- か_Bb4", "a -_Bb4" })]
+        [InlineData("", "F5", 12,
+            new string[] { "- か_Bb4", "a_Eb5", "a -_Bb4" })]
+        [InlineData("Soft", "F4", 0,
+            new string[] { "- か_S", "a -_S" })]
+        [InlineData("Soft", "F4", -1,
+            new string[] { "- か_S", "a -_S" })]
+        [InlineData("Soft", "F4", 1,
+            new string[] { "- か_S", "a -_S" })]
+        [InlineData("Soft", "F4", -12,
+            new string[] { "- か_S", "a -_S" })]
+        [InlineData("Soft", "F4", 12,
+            new string[] { "- か_S", "a -_S" })]
+        [InlineData("Soft", "F5", 0,
+            new string[] { "- か_S", "a -_S" })]
+        [InlineData("Soft", "F5", -1,
+            new string[] { "- か_S", "a -_S" })]
+        [InlineData("Soft", "F5", 1,
+            new string[] { "- か_S", "a -_S" })]
+        [InlineData("Soft", "F5", -12,
+            new string[] { "- か_S", "a -_S" })]
+        [InlineData("Soft", "F5", 12,
+            new string[] { "- か_S", "a -_S" })]
+        public void CutHighNotesTest(string color, string tone, int shift, string[] aliases) {
+            RunPhonemizeTest("", new NoteParams[] {
+                new NoteParams { lyric = "か", hint = "", tone = tone, phonemes = SamePhonemeParams(3, shift, 0, color) },
+            }, aliases);
+        }
     }
 }
