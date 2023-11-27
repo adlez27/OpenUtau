@@ -31,6 +31,7 @@ namespace AbsideePhonemizer {
                 { "ih", "e" },
                 { "iy", "i" },
                 { "jh", "j" },
+                { "r", "rr" },
                 { "uh", "@" },
                 { "uw", "u" }
             };
@@ -52,11 +53,47 @@ namespace AbsideePhonemizer {
         }
 
         protected override List<string> ProcessEnding(Ending ending) {
-            return new List<string> { ending.ToString() };
+            if (ending.IsEndingV) {
+                return new List<string> { $"{ending.prevV} -" }; 
+            }
+
+            var consonants = new List<string>();
+            foreach(var c in ending.cc) {
+                if (c == "y") {
+                    consonants.Add("i");
+                } else if (c == "w") {
+                    consonants.Add("u");
+                } else {
+                    consonants.Add(c);
+                }
+            }
+
+            var phonemes = new List<string> {
+                $"{ending.prevV} {consonants[0]}"
+            };
+            
+            if (ending.IsEndingVCWithOneConsonant) {
+                phonemes.Add($"{consonants[0]} -");
+            } else {
+                var prevCons = consonants[0];
+                var lastCons = consonants.Last();
+                for (var i = 1; i < consonants.Count; i++) {
+                    if (prevCons == "i" || prevCons == "u") {
+                        phonemes.Add($"{prevCons} {consonants[i]}");
+                    } else if (i < consonants.Count-1){
+                        phonemes.Add(consonants[i]);
+                    }
+                    prevCons = consonants[i];
+                }
+                phonemes.Add($"{lastCons} -");
+            }
+
+
+            return phonemes;
         }
 
         protected override List<string> ProcessSyllable(Syllable syllable) {
-            return new List<string> { syllable.ToString() };
+            return new List<string> { syllable.ToString() + "_G3" };
         }
     }
 }
