@@ -61,11 +61,14 @@ namespace AbsideePhonemizer {
 
             var aliasEnd = phoneme.phoneme.Last().ToString();
             phoneme.phoneme += "_Bb4";
-            if (aliasEnd == "-") {
+
+            var vowel = WanaKana.IsHiragana(aliasEnd) ? WanaKana.ToRomaji(aliasEnd).Last().ToString() : aliasEnd;
+            var validVowels = "a i u e o n @".Split();
+            if (!validVowels.Contains(vowel)) {
                 return new List<Phoneme> { phoneme };
             }
 
-            var vowel = WanaKana.IsHiragana(aliasEnd) ? WanaKana.ToRomaji(aliasEnd).Last().ToString() : aliasEnd;
+            vowel = vowel == "n" ? "N" : vowel;
             var split = new List<Phoneme> { 
                 phoneme,
                 new Phoneme {

@@ -128,5 +128,42 @@ namespace AbsideePhonemizer.Test {
                 new NoteParams { lyric = "か", hint = "", tone = tone, phonemes = SamePhonemeParams(3, shift, 0, color) },
             }, aliases);
         }
+
+        [Theory]
+        [InlineData(
+            new string[] { "ん", "ん" },
+            new string[] { "- ん_Bb4", "N_Eb5", "n ん_Bb4", "N_Eb5", "n -_Bb4" })]
+        [InlineData(
+            new string[] { "あ", "ん" },
+            new string[] { "- あ_Eb5", "a ん_Bb4", "N_Eb5", "n -_Bb4" })]
+        [InlineData(
+            new string[] { "ん", "あ" },
+            new string[] { "- ん_Bb4", "N_Eb5", "n あ_Bb4", "a_Eb5", "a -_Bb4" })]
+        [InlineData(
+            new string[] { "い", "ん" },
+            new string[] { "- い_Eb5", "i ん_Bb4", "N_Eb5", "n -_Bb4" })]
+        [InlineData(
+            new string[] { "ん", "い" },
+            new string[] { "- ん_Bb4", "N_Eb5", "n い_Bb4", "i_Eb5", "i -_Bb4" })]
+        [InlineData(
+            new string[] { "う", "ん" },
+            new string[] { "- う_Eb5", "u ん_Bb4", "N_Eb5", "n -_Bb4" })]
+        [InlineData(
+            new string[] { "ん", "う" },
+            new string[] { "- ん_Bb4", "N_Eb5", "n う_Bb4", "u_Eb5", "u -_Bb4" })]
+        [InlineData(
+            new string[] { "ん", "hh" },
+            new string[] { "- ん_Bb4", "N_Eb5", "n hh_Bb4" })]
+        public void FallbackTest(string[] lyrics, string[] aliases) {
+            SameAltsTonesColorsTest("", lyrics, aliases, "", "F5", "");
+        }
+
+        [Theory]
+        [InlineData(
+            new string[] { "あ", "さ" },
+            new string[] { "- あ_Eb5", "a s_Bb4", "さ_Bb4", "a_Eb5", "a -_Bb4" })]
+        public void OnlySplitHighVowelsTest(string[] lyrics, string[] aliases) {
+            SameAltsTonesColorsTest("", lyrics, aliases, "", "F5", "");
+        }
     }
 }
