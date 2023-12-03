@@ -32,8 +32,6 @@ namespace AbsideePhonemizer.Test {
             new string[] { "()  o", "o -" })]
         [InlineData("eh",
             new string[] { "()  e", "e -" })]
-        [InlineData("er",
-            new string[] { "()  @", "@ -" })]
         [InlineData("f",
             new string[] { "()  e", "e ff", "ff -" })]
         [InlineData("he",
@@ -64,8 +62,9 @@ namespace AbsideePhonemizer.Test {
             SameAltsTonesColorsTest(new string[] { lyric }, aliases);
         }
 
-        [Theory]
         // Rewrite beginning syllables later
+        
+        [Theory]
         [InlineData("saw",
             new string[] { "() s o", "o -" })]
         [InlineData("hi",
@@ -80,14 +79,19 @@ namespace AbsideePhonemizer.Test {
             new string[] { "() d e", "e s", "k", "s -" })]
         [InlineData("heist",
             new string[] { "() h a", "a i", "i s", "t -" })]
+        public void EndingTest(string lyric, string[] aliases) {
+            SameAltsTonesColorsTest(new string[] { lyric }, aliases);
+        }
+
+        [Theory]
         [InlineData("ink",
             new string[] { "()  e", "e ng", "n k", "k -" })]
         [InlineData("int",
             new string[] { "()  e", "e n", "n t", "t -" })]
         [InlineData("imp",
             new string[] { "()  e", "e m", "n p", "p -" })]
-        [InlineData("unt",
-            new string[] { "()  @", "@ n", "t -" })]
+        [InlineData("things",
+            new string[] { "() th e", "e ng", "z -" })]
         [InlineData("its",
             new string[] { "()  e", "e ts", "ts -" })]
         [InlineData("ads",
@@ -96,7 +100,7 @@ namespace AbsideePhonemizer.Test {
             new string[] { "() h @", "@ rr", "rr -" })]
         [InlineData("hurt",
             new string[] { "() h @", "@ t", "t -" })]
-        public void EndingTest(string lyric, string[] aliases) {
+        public void EndingSpecialTest(string lyric, string[] aliases) {
             SameAltsTonesColorsTest(new string[] { lyric }, aliases);
         }
     }

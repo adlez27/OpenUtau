@@ -10,10 +10,9 @@ namespace AbsideePhonemizer {
     [Phonemizer("Absidee English Phonemizer", "EN ABC", "Adlez27", "EN")]
     public class AbsideeEnglishPhonemizer : SyllableBasedPhonemizer {
         protected override string[] GetVowels() =>
-            "a i u e o @ ay ey oy ow aw".Split();
+            "a i u e o @ @r ay ey oy ow aw".Split();
 
         protected override string[] GetConsonants() => new string[0];
-            //"k ky g gy ng s sh z j zh t ch ts d dz n ny h hy f ff b by p py m my y r ry l rr w v th dh".Split();
 
         protected override string GetDictionaryName() => "";
         protected override IG2p LoadBaseDictionary() => new ArpabetG2p();
@@ -25,7 +24,7 @@ namespace AbsideePhonemizer {
                 { "ah", "@" },
                 { "ao", "o" },
                 { "eh", "e" },
-                { "er", "@" },
+                { "er", "@r" },
                 { "f", "ff" },
                 { "hh", "h" },
                 { "ih", "e" },
@@ -38,12 +37,41 @@ namespace AbsideePhonemizer {
 
         protected override string[] GetSymbols(Note note) {
             var symbols = base.GetSymbols(note);
-            var diphthongs = "ay ey oy ow aw".Split();
             var adjustedSymbols = new List<string>();
-            foreach(var symbol in symbols) {
-                if (diphthongs.Contains(symbol)) {
-                    adjustedSymbols.Add(symbol.First().ToString());
-                    adjustedSymbols.Add(symbol.Last().ToString());
+
+            // combine affricates
+            for (var i = 0; i < symbols.Length - 1; i++) {
+                var cc = $"{symbols[i]}{symbols[i+1]}";
+                if (cc == "ts" || cc == "dz") {
+                    adjustedSymbols.Add(cc);
+                } else {
+                    adjustedSymbols.Add(symbols[i]);
+                    if (i == symbols.Length - 2) {
+                        adjustedSymbols.Add(symbols[i + 1]);
+                    }
+                }
+            }
+
+            if (symbols.Length == 1) {
+                adjustedSymbols.Add(symbols[0]);
+            }
+
+            symbols = adjustedSymbols.ToArray();
+            adjustedSymbols.Clear();
+
+            // split diphthongs
+            var diphthongs = new Dictionary<string, string[]> {
+                { "ay", new string[] {"a", "y"} },
+                { "ey", new string[] {"e", "y"} },
+                { "oy", new string[] {"o", "y"} },
+                { "aw", new string[] {"a", "w"} },
+                { "ow", new string[] {"o", "w"} },
+                { "@r", new string[] {"@", "rr"} },
+            };
+
+            foreach (var symbol in symbols) {
+                if (diphthongs.Keys.Contains(symbol)) {
+                    adjustedSymbols.AddRange(diphthongs[symbol]);
                 } else {
                     adjustedSymbols.Add(symbol);
                 }
@@ -58,7 +86,12 @@ namespace AbsideePhonemizer {
             }
 
             var consonants = new List<string>();
-            foreach(var c in ending.cc) {
+            for (var i = 0; i < ending.cc.Length; i++) {
+                var c = ending.cc[i];
+                if (i == 0 && ending.cc.Length > 1 && ending.prevV == "@" && c == "rr") {
+                    continue;
+                }
+
                 if (c == "y") {
                     consonants.Add("i");
                 } else if (c == "w") {
@@ -80,6 +113,8 @@ namespace AbsideePhonemizer {
                 for (var i = 1; i < consonants.Count; i++) {
                     if (prevCons == "i" || prevCons == "u") {
                         phonemes.Add($"{prevCons} {consonants[i]}");
+                    } else if (IsValidNasalCluster(prevCons, consonants[i] )) {
+                        phonemes.Add($"n {consonants[i]}");
                     } else if (i < consonants.Count-1){
                         phonemes.Add(consonants[i]);
                     }
@@ -88,8 +123,16 @@ namespace AbsideePhonemizer {
                 phonemes.Add($"{lastCons} -");
             }
 
-
             return phonemes;
+        }
+
+        private bool IsValidNasalCluster(string nasal, string consonant) {
+            var valid = new Dictionary<string, string[]> {
+                {"n", new string[] {"n", "t", "ch", "ts", "d", "dz", "r", "l"} },
+                {"m", new string[] {"m", "b", "by", "p", "py" } },
+                {"ng", new string[] {"ng","k", "ky", "g", "gy"} }
+            };
+            return valid[nasal].Contains(consonant);
         }
 
         protected override List<string> ProcessSyllable(Syllable syllable) {
