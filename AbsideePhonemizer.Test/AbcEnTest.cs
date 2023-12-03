@@ -88,6 +88,14 @@ namespace AbsideePhonemizer.Test {
             new string[] { "()  e", "e m", "n p", "p -" })]
         [InlineData("unt",
             new string[] { "()  @", "@ n", "t -" })]
+        [InlineData("its",
+            new string[] { "()  e", "e ts", "ts -" })]
+        [InlineData("ads",
+            new string[] { "()  e", "e dz", "dz -" })]
+        [InlineData("her",
+            new string[] { "() h @", "@ rr", "rr -" })]
+        [InlineData("hurt",
+            new string[] { "() h @", "@ t", "t -" })]
         public void EndingTest(string lyric, string[] aliases) {
             SameAltsTonesColorsTest(new string[] { lyric }, aliases);
         }
