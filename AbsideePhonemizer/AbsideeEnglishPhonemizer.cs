@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NumSharp.Utilities;
 using OpenUtau.Api;
 using OpenUtau.Core.G2p;
 using OpenUtau.Core.Ustx;
@@ -37,27 +38,12 @@ namespace AbsideePhonemizer {
 
         protected override string[] GetSymbols(Note note) {
             var symbols = base.GetSymbols(note);
-            var adjustedSymbols = new List<string>();
 
             // combine affricates
-            for (var i = 0; i < symbols.Length - 1; i++) {
-                var cc = $"{symbols[i]}{symbols[i+1]}";
-                if (cc == "ts" || cc == "dz") {
-                    adjustedSymbols.Add(cc);
-                } else {
-                    adjustedSymbols.Add(symbols[i]);
-                    if (i == symbols.Length - 2) {
-                        adjustedSymbols.Add(symbols[i + 1]);
-                    }
-                }
-            }
-
-            if (symbols.Length == 1) {
-                adjustedSymbols.Add(symbols[0]);
-            }
-
-            symbols = adjustedSymbols.ToArray();
-            adjustedSymbols.Clear();
+            var symbolString = string.Join(" ", symbols);
+            symbolString = symbolString.Replace("t s", "ts");
+            symbolString = symbolString.Replace("d z", "dz");
+            symbols = symbolString.Split();
 
             // split diphthongs
             var diphthongs = new Dictionary<string, string[]> {
@@ -69,6 +55,7 @@ namespace AbsideePhonemizer {
                 { "@r", new string[] {"@", "rr"} },
             };
 
+            var adjustedSymbols = new List<string>();
             foreach (var symbol in symbols) {
                 if (diphthongs.Keys.Contains(symbol)) {
                     adjustedSymbols.AddRange(diphthongs[symbol]);
@@ -132,11 +119,44 @@ namespace AbsideePhonemizer {
                 {"m", new string[] {"m", "b", "by", "p", "py" } },
                 {"ng", new string[] {"ng","k", "ky", "g", "gy"} }
             };
-            return valid[nasal].Contains(consonant);
+            return valid.ContainsKey(nasal) ? valid[nasal].Contains(consonant) : false;
         }
 
         protected override List<string> ProcessSyllable(Syllable syllable) {
-            return new List<string> { syllable.ToString() + "_G3" };
+            var prevV = syllable.prevV == "" ? "" : $"{syllable.prevV} ";
+            var cc = syllable.cc;
+            var v = syllable.v;
+
+            if (syllable.IsStartingV) {
+                return new List<string> { $"- {v}" };
+            }
+            if (syllable.IsVV) {
+                return new List<string> { $"{prevV}{v}" };
+            }
+            if (syllable.IsStartingCVWithOneConsonant) {
+                return new List<string> { $"- {cc[0]}{v}" };
+            }
+
+            if (cc.Length > 1) {
+                if (prevV == "@ " && cc[0] == "rr") {
+                    cc = cc.RemoveAt(0);
+                    syllable.cc = cc;
+                }
+                cc[0] = cc[0].Replace("y", "i");
+                cc[0] = cc[0].Replace("w", "u");
+            }
+            
+            var phonemes = new List<string> { $"{prevV}{cc[0]}" };            
+            
+            if (syllable.IsVCVWithOneConsonant) {
+                phonemes.Add($"{cc[0]}{v}");
+                return phonemes;
+            }
+
+            // -ccv
+            // vccv
+
+            return phonemes;
         }
     }
 }
