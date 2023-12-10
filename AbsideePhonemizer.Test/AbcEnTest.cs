@@ -309,5 +309,60 @@ namespace AbsideePhonemizer.Test {
             SameAltsTonesColorsTest(new string[] { "a", "dark" }, 
                 new string[] { "- @", "@ da", "a rr", "k -" });
         }
+
+        [Theory]
+        [InlineData("", "F4", 0,
+            new string[] { "- la_Bb4", "a -_Bb4" })]
+        [InlineData("", "F4", -1,
+            new string[] { "- la_Bb4", "a -_Bb4" })]
+        [InlineData("", "F4", 1,
+            new string[] { "- la_Bb4", "a -_Bb4" })]
+        [InlineData("", "F4", -12,
+            new string[] { "- la_G3", "a -_G3" })]
+        [InlineData("", "F4", 12,
+            new string[] { "- la_Bb4", "a_Eb5", "a -_Bb4" })]
+        [InlineData("", "F5", 0,
+            new string[] { "- la_Bb4", "a_Eb5", "a -_Bb4" })]
+        [InlineData("", "F5", -1,
+            new string[] { "- la_Bb4", "a_Eb5", "a -_Bb4" })]
+        [InlineData("", "F5", 1,
+            new string[] { "- la_Bb4", "a_Eb5", "a -_Bb4" })]
+        [InlineData("", "F5", -12,
+            new string[] { "- la_Bb4", "a -_Bb4" })]
+        [InlineData("", "F5", 12,
+            new string[] { "- la_Bb4", "a_Eb5", "a -_Bb4" })]
+        [InlineData("Soft", "F4", 0,
+            new string[] { "- la_S", "a -_S" })]
+        [InlineData("Soft", "F4", -1,
+            new string[] { "- la_S", "a -_S" })]
+        [InlineData("Soft", "F4", 1,
+            new string[] { "- la_S", "a -_S" })]
+        [InlineData("Soft", "F4", -12,
+            new string[] { "- la_S", "a -_S" })]
+        [InlineData("Soft", "F4", 12,
+            new string[] { "- la_S", "a -_S" })]
+        [InlineData("Soft", "F5", 0,
+            new string[] { "- la_S", "a -_S" })]
+        [InlineData("Soft", "F5", -1,
+            new string[] { "- la_S", "a -_S" })]
+        [InlineData("Soft", "F5", 1,
+            new string[] { "- la_S", "a -_S" })]
+        [InlineData("Soft", "F5", -12,
+            new string[] { "- la_S", "a -_S" })]
+        [InlineData("Soft", "F5", 12,
+            new string[] { "- la_S", "a -_S" })]
+        public void CutHighNotesTest(string color, string tone, int shift, string[] aliases) {
+            RunPhonemizeTest("", new NoteParams[] {
+                new NoteParams { lyric = "la", hint = "", tone = tone, phonemes = SamePhonemeParams(3, shift, 0, color) },
+            }, aliases);
+        }
+
+        [Theory]
+        [InlineData(
+            new string[] { "a", "see" },
+            new string[] { "- @_Eb5", "@ s_Bb4", "si_Bb4", "i_Eb5", "i -_Bb4" })]
+        public void OnlySplitHighVowelsTest(string[] lyrics, string[] aliases) {
+            SameAltsTonesColorsTest("", lyrics, aliases, "", "F5", "");
+        }
     }
 }

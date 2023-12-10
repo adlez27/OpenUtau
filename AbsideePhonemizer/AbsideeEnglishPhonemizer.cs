@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using NumSharp.Utilities;
 using OpenUtau.Api;
 using OpenUtau.Core.G2p;
 using OpenUtau.Core.Ustx;
 using OpenUtau.Plugin.Builtin;
+using YamlDotNet.Core.Tokens;
 
 namespace AbsideePhonemizer {
     [Phonemizer("Absidee English Phonemizer", "EN ABC", "Adlez27", "EN")]
@@ -44,6 +46,10 @@ namespace AbsideePhonemizer {
         public override void SetSinger(USinger singer) {
             base.SetSinger(singer);
             util.Singer = singer;
+        }
+
+        protected override Phoneme[] AssignAllAffixes(List<Phoneme> phonemes, Note[] notes, Note[] prevs) {
+            return util.AssignSuffixes(phonemes, notes, prevs);
         }
 
         protected override string[] GetSymbols(Note note) {
