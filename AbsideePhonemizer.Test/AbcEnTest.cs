@@ -107,15 +107,17 @@ namespace AbsideePhonemizer.Test {
 
         [Theory]
         [InlineData("at",
-    new string[] { "- e", "e t", "t -" })]
+            new string[] { "- e", "e t", "t -" })]
         [InlineData("hat",
-    new string[] { "- he", "e t", "t -" })]
+            new string[] { "- he", "e t", "t -" })]
         [InlineData("tso",
-    new string[] { "- tso", "o u", "u -" })]
+            new string[] { "- tso", "o u", "u -" })]
         [InlineData("scuff",
-    new string[] { "s", "k@", "@ ff", "ff -" })]
+            new string[] { "s", "k@", "@ ff", "ff -" })]
         [InlineData("scruff",
-    new string[] { "s", "k@", "rr@", "@ ff", "ff -" })]
+            new string[] { "s", "k@", "rr@", "@ ff", "ff -" })]
+        [InlineData("crew",
+            new string[] { "- k@", "rru", "u -" })]
         public void SyllableNoPreviousTest(string lyric, string[] aliases) {
             SameAltsTonesColorsTest(lyric, aliases);
         }
@@ -131,6 +133,8 @@ namespace AbsideePhonemizer.Test {
             new string[] { "- @", "@ s", "k@", "@ ff", "ff -" })]
         [InlineData("scruff",
             new string[] { "- @", "@ s", "k@", "rr@", "@ ff", "ff -" })]
+        [InlineData("crew",
+            new string[] { "- @", "@ k", "k@", "rru", "u -" })]
         public void SyllablePreviousVowelTest(string lyric, string[] aliases) {
             SameAltsTonesColorsTest(new string[] { "a", lyric }, aliases);
         }
@@ -146,6 +150,8 @@ namespace AbsideePhonemizer.Test {
             new string[] { "- a", "a i", "i s", "k@", "@ ff", "ff -" })]
         [InlineData("scruff",
             new string[] { "- a", "a i", "i s", "k@", "rr@", "@ ff", "ff -" })]
+        [InlineData("crew",
+            new string[] { "- a", "a i", "i k", "k@", "rru", "u -" })]
         public void SyllablePreviousDiphthongTest(string lyric, string[] aliases) {
             SameAltsTonesColorsTest(new string[] { "I", lyric }, aliases);
         }
@@ -161,8 +167,65 @@ namespace AbsideePhonemizer.Test {
             new string[] { "- h@", "@ s", "k@", "@ ff", "ff -" })]
         [InlineData("scruff",
             new string[] { "- h@", "@ s", "k@", "rr@", "@ ff", "ff -" })]
+        [InlineData("crew",
+            new string[] { "- h@", "@ k", "k@", "rru", "u -" })]
         public void SyllablePreviousRhoticTest(string lyric, string[] aliases) {
             SameAltsTonesColorsTest(new string[] { "her", lyric }, aliases);
+        }
+
+        [Theory]
+        [InlineData("at",
+            new string[] { "- e", "e g", "ge", "e t", "t -" })]
+        [InlineData("hat",
+            new string[] { "- e", "e g", "he", "e t", "t -" })]
+        [InlineData("tso",
+            new string[] { "- e", "e g", "tso", "o u", "u -" })]
+        [InlineData("scuff",
+            new string[] { "- e", "e g", "s", "k@", "@ ff", "ff -" })]
+        [InlineData("scruff",
+            new string[] { "- e", "e g", "s", "k@", "rr@", "@ ff", "ff -" })]
+        [InlineData("crew",
+            new string[] { "- e", "e g", "k@", "rru", "u -" })]
+        public void SyllablePreviousConsonantTest(string lyric, string[] aliases) {
+            SameAltsTonesColorsTest(new string[] { "egg", lyric }, aliases);
+        }
+
+        [Theory]
+        [InlineData("at",
+            new string[] { "- e", "e g", "ze", "e t", "t -" })]
+        [InlineData("hat",
+            new string[] { "- e", "e g", "z", "he", "e t", "t -" })]
+        [InlineData("tso",
+            new string[] { "- e", "e g", "z", "tso", "o u", "u -" })]
+        [InlineData("scuff",
+            new string[] { "- e", "e g", "z", "s", "k@", "@ ff", "ff -" })]
+        [InlineData("scruff",
+            new string[] { "- e", "e g", "z", "s", "k@", "rr@", "@ ff", "ff -" })]
+        [InlineData("crew",
+            new string[] { "- e", "e g", "z", "k@", "rru", "u -" })]
+        public void SyllablePreviousClusterTest(string lyric, string[] aliases) {
+            SameAltsTonesColorsTest(new string[] { "eggs", lyric }, aliases);
+        }
+
+        [Theory]
+        [InlineData(new string[] { "crew" },
+            new string[] { "- k@", "rru", "u -" })]
+        [InlineData(new string[] { "claw" },
+            new string[] { "- k@", "lo", "o -" })]
+        [InlineData(new string[] { "cute" },
+            new string[] { "- ki", "yu", "u t", "t -" })]
+        [InlineData(new string[] { "queen" },
+            new string[] { "- ku", "wi", "i n", "n -" })]
+        [InlineData(new string[] { "a", "crew" },
+            new string[] { "- @", "@ k", "k@", "rru", "u -" })]
+        [InlineData(new string[] { "a", "claw" },
+            new string[] { "- @", "@ k", "k@", "lo", "o -" })]
+        [InlineData(new string[] { "a", "cute" },
+            new string[] { "- @", "@ k", "ki", "yu", "u t", "t -" })]
+        [InlineData(new string[] { "a", "queen" },
+            new string[] { "- @", "@ k", "ku", "wi", "i n", "n -" })]
+        public void SyllableLiquidGlideClusterTest(string[] lyrics, string[] aliases) {
+            SameAltsTonesColorsTest(lyrics, aliases);
         }
     }
 }

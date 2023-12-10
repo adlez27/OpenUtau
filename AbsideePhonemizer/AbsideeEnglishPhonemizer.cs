@@ -137,25 +137,53 @@ namespace AbsideePhonemizer {
                 return new List<string> { $"- {cc[0]}{v}" };
             }
 
-            if (cc.Length > 1) {
-                if (prevV == "@ " && cc[0] == "rr") {
-                    cc = cc.RemoveAt(0);
-                    syllable.cc = cc;
-                }
-                cc[0] = cc[0].Replace("y", "i");
-                cc[0] = cc[0].Replace("w", "u");
+            if (prevV == "@ " && cc[0] == "rr" && cc.Length > 1) {
+                cc = cc.RemoveAt(0);
+                syllable.cc = cc;
             }
-            
-            var phonemes = new List<string> { $"{prevV}{cc[0]}" };            
-            
+
             if (syllable.IsVCVWithOneConsonant) {
-                phonemes.Add($"{cc[0]}{v}");
-                return phonemes;
+                return new List<string> {$"{prevV}{cc[0]}", $"{cc[0]}{v}" };
             }
 
-            // -ccv
-            // vccv
+            var liquidPairs = new Dictionary<string, string> {
+                { "rr", "@" },
+                { "l", "@" },
+                { "y", "i" },
+                { "w", "u" }
+            };
 
+            var phonemes = new List<string>();
+            cc[0] = cc[0].Replace("y", "i");
+            cc[0] = cc[0].Replace("w", "u");
+
+            var prev = prevV;
+            for(var i = 0; i < cc.Length-1; i++) {
+                var current = cc[i];
+                if (liquidPairs.ContainsKey(cc[i+1])) {
+                    if (i == 0 && prevV == "") {
+                        phonemes.Add($"- {current}{liquidPairs[cc[i + 1]]}");
+                    } else {
+                        if (prev != "") {
+                            phonemes.Add($"{prev}{current}");
+                        }
+                        phonemes.Add($"{current}{liquidPairs[cc[i+1]]}");
+                    }
+                } else {
+                    phonemes.Add($"{prev}{current}");
+                }
+
+                if (current == "i" || current == "u") {
+                    prev = $"{current} ";
+                } else {
+                    prev = "";
+                }
+            }
+            if (prev != "") {
+                phonemes.Add($"{prev}{cc.Last()}");
+            }
+
+            phonemes.Add($"{cc.Last()}{v}");
             return phonemes;
         }
     }
