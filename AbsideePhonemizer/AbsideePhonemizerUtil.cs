@@ -84,9 +84,23 @@ namespace AbsideePhonemizer {
             var leftHasAttrs = left.phonemeAttributes.Length > 0;
             var rightHasAttrs = right.phonemeAttributes.Length > 0;
 
-            var leftAttr = leftHasAttrs ? left.phonemeAttributes.MaxBy(a => a.index) : new PhonemeAttributes { index = 0, toneShift = 0, voiceColor = null};
-            var rightAttr = rightHasAttrs ? right.phonemeAttributes.MinBy(a => a.index) : new PhonemeAttributes { index = 0, toneShift = 0, voiceColor = null};
+            var leftAttr = leftHasAttrs ? left.phonemeAttributes.MaxBy(a => a.index) : new PhonemeAttributes { index = 0, toneShift = 0, voiceColor = null };
+            var rightAttr = rightHasAttrs ? right.phonemeAttributes.MinBy(a => a.index) : new PhonemeAttributes { index = 0, toneShift = 0, voiceColor = null };
 
+            return CanVCV(alias, leftAttr, left.tone, rightAttr, right.tone);
+        }
+
+        public bool CanVCV(string alias, PhonemeAttributes[] left, int leftTone, PhonemeAttributes[] right, int rightTone) {
+            var leftHasAttrs = left.Length > 0;
+            var rightHasAttrs = right.Length > 0;
+
+            var leftAttr = leftHasAttrs ? left.MaxBy(a => a.index) : new PhonemeAttributes { index = 0, toneShift = 0, voiceColor = null };
+            var rightAttr = rightHasAttrs ? right.MinBy(a => a.index) : new PhonemeAttributes { index = 0, toneShift = 0, voiceColor = null };
+
+            return CanVCV(alias, leftAttr, leftTone, rightAttr, rightTone);
+        }
+
+        private bool CanVCV(string alias, PhonemeAttributes leftAttr, int leftBaseTone, PhonemeAttributes rightAttr, int rightBaseTone) {
             // User can force CVVC with alternates
             if (leftAttr.alternate != rightAttr.alternate) { return false; }
             // Must be same voice color
@@ -94,12 +108,12 @@ namespace AbsideePhonemizer {
 
             // Must be same pitch subbank
             var subbanks = (List<USubbank>)singer.Subbanks;
-            var leftTone = left.tone + leftAttr.toneShift;
-            var rightTone = right.tone + rightAttr.toneShift;
-            var subbank = subbanks.Find(subbank => string.IsNullOrEmpty(subbank.Color) 
+            var leftTone = leftBaseTone + leftAttr.toneShift;
+            var rightTone = rightBaseTone + rightAttr.toneShift;
+            var subbank = subbanks.Find(subbank => string.IsNullOrEmpty(subbank.Color)
                 && subbank.toneSet.Contains(leftTone)
                 && subbank.toneSet.Contains(rightTone));
-            if (subbank == null) { 
+            if (subbank == null) {
                 return false;
             }
 

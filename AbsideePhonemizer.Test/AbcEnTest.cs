@@ -279,5 +279,35 @@ namespace AbsideePhonemizer.Test {
         public void SeparatedTailTest(string[] lyrics, string[] aliases) {
             SameAltsTonesColorsTest(lyrics, aliases);
         }
+
+        [Fact]
+        public void ColorTest() {
+            RunPhonemizeTest("", new NoteParams[] {
+                new NoteParams { lyric = "la", hint = "", tone = "C4", phonemes = new PhonemeParams[] {
+                    new PhonemeParams { alt = 0, color = "", shift = 0},
+                    new PhonemeParams { alt = 0, color = "Soft", shift = 0},
+                } }
+            }, new string[] { "- la_G3", "a -_S" });
+        }
+
+        [Fact]
+        public void PitchTest() {
+            RunPhonemizeTest("", new NoteParams[] {
+                new NoteParams { lyric = "a", hint = "", tone = "C4", phonemes = new PhonemeParams[] {
+                    new PhonemeParams { alt = 0, color = "", shift = 0}
+                } },
+                new NoteParams { lyric = "see", hint = "", tone = "C4", phonemes = new PhonemeParams[] {
+                    new PhonemeParams { alt = 0, color = "", shift = 12},
+                    new PhonemeParams { alt = 0, color = "", shift = 0},
+                    new PhonemeParams { alt = 0, color = "", shift = 0},
+                } }
+            }, new string[] { "- @_G3", "@ s_Bb4", "si_G3", "i -_G3" });
+        }
+
+        [Fact]
+        public void PrioritizeVCVTest() {
+            SameAltsTonesColorsTest(new string[] { "a", "dark" }, 
+                new string[] { "- @", "@ da", "a rr", "k -" });
+        }
     }
 }

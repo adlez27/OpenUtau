@@ -36,6 +36,16 @@ namespace AbsideePhonemizer {
                 { "uw", "u" }
             };
 
+        private AbsideePhonemizerUtil util;
+        public AbsideeEnglishPhonemizer() {
+            util = new AbsideePhonemizerUtil();
+        }
+
+        public override void SetSinger(USinger singer) {
+            base.SetSinger(singer);
+            util.Singer = singer;
+        }
+
         protected override string[] GetSymbols(Note note) {
             if (note.lyric == "-" || note.lyric == "hh") {
                 return new string[] { note.lyric };
@@ -152,7 +162,12 @@ namespace AbsideePhonemizer {
             }
 
             if (syllable.IsVCVWithOneConsonant) {
-                return new List<string> {$"{prevV}{cc[0]}", $"{cc[0]}{v}" };
+                var vcv = $"{prevV}{cc[0]}{v}";
+                if (util.CanVCV(vcv, syllable.attr, syllable.tone, syllable.vowelAttr, syllable.vowelTone)) {
+                    return new List<string> { vcv };
+                } else {
+                    return new List<string> {$"{prevV}{cc[0]}", $"{cc[0]}{v}" };
+                }
             }
 
             var liquidPairs = new Dictionary<string, string> {
