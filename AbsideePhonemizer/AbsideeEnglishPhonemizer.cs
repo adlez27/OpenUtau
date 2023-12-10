@@ -37,6 +37,9 @@ namespace AbsideePhonemizer {
             };
 
         protected override string[] GetSymbols(Note note) {
+            if (note.lyric == "-" || note.lyric == "hh") {
+                return new string[] { note.lyric };
+            }
             var symbols = base.GetSymbols(note);
 
             // combine affricates
@@ -70,6 +73,10 @@ namespace AbsideePhonemizer {
         }
 
         protected override List<string> ProcessEnding(Ending ending) {
+            if (ending.prevV == "-" || ending.prevV == "hh") {
+                return new List<string>();
+            }
+
             if (ending.IsEndingV) {
                 return new List<string> { $"{ending.prevV} -" }; 
             }
@@ -132,7 +139,7 @@ namespace AbsideePhonemizer {
             if (syllable.IsStartingV) {
                 return new List<string> { $"- {v}" };
             }
-            if (syllable.IsVV) {
+            if (syllable.IsVV || v == "-" || v == "hh") {
                 return new List<string> { $"{prevV}{v}" };
             }
             if (syllable.IsStartingCVWithOneConsonant) {

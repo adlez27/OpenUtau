@@ -268,5 +268,16 @@ namespace AbsideePhonemizer.Test {
         public void SyllableAffricateClusterTest(string[] lyrics, string[] aliases) {
             SameAltsTonesColorsTest(lyrics, aliases);
         }
+
+        [Theory]
+        [InlineData(
+            new string[] { "la", "-" },
+            new string[] { "- la", "a -" })]
+        [InlineData(
+            new string[] { "la", "hh" },
+            new string[] { "- la", "a hh" })]
+        public void SeparatedTailTest(string[] lyrics, string[] aliases) {
+            SameAltsTonesColorsTest(lyrics, aliases);
+        }
     }
 }
