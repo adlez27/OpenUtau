@@ -43,6 +43,8 @@ namespace AbsideePhonemizer {
             var symbolString = string.Join(" ", symbols);
             symbolString = symbolString.Replace("t s", "ts");
             symbolString = symbolString.Replace("d z", "dz");
+            symbolString = symbolString.Replace("t rr", "ch rr");
+            symbolString = symbolString.Replace("d rr", "j rr");
             symbols = symbolString.Split();
 
             // split diphthongs

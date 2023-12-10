@@ -227,5 +227,46 @@ namespace AbsideePhonemizer.Test {
         public void SyllableLiquidGlideClusterTest(string[] lyrics, string[] aliases) {
             SameAltsTonesColorsTest(lyrics, aliases);
         }
+
+        [Theory]
+        [InlineData(new string[] { "true" },
+            new string[] { "- ch@", "rru", "u -" })]
+        [InlineData(new string[] { "drew" },
+            new string[] { "- j@", "rru", "u -" })]
+        [InlineData(new string[] { "string" },
+            new string[] { "s", "ch@", "rre", "e ng", "ng -" })]
+        [InlineData(new string[] { "a", "true" },
+            new string[] { "- @", "@ ch", "ch@", "rru", "u -" })]
+        [InlineData(new string[] { "a", "drew" },
+            new string[] { "- @", "@ j", "j@", "rru", "u -" })]
+        [InlineData(new string[] { "a", "string" },
+            new string[] { "- @", "@ s", "ch@", "rre", "e ng", "ng -" })]
+        [InlineData(new string[] { "I", "true" },
+            new string[] { "- a", "a i", "i ch", "ch@", "rru", "u -" })]
+        [InlineData(new string[] { "I", "drew" },
+            new string[] { "- a", "a i", "i j", "j@", "rru", "u -" })]
+        [InlineData(new string[] { "I", "string" },
+            new string[] { "- a", "a i", "i s", "ch@", "rre", "e ng", "ng -" })]
+        [InlineData(new string[] { "her", "true" },
+            new string[] { "- h@", "@ ch", "ch@", "rru", "u -" })]
+        [InlineData(new string[] { "her", "drew" },
+            new string[] { "- h@", "@ j", "j@", "rru", "u -" })]
+        [InlineData(new string[] { "her", "string" },
+            new string[] { "- h@", "@ s", "ch@", "rre", "e ng", "ng -" })]
+        [InlineData(new string[] { "egg", "true" },
+            new string[] { "- e", "e g", "ch@", "rru", "u -" })]
+        [InlineData(new string[] { "egg", "drew" },
+            new string[] { "- e", "e g", "j@", "rru", "u -" })]
+        [InlineData(new string[] { "egg", "string" },
+            new string[] { "- e", "e g", "s", "ch@", "rre", "e ng", "ng -" })]
+        [InlineData(new string[] { "eggs", "true" },
+            new string[] { "- e", "e g", "z", "ch@", "rru", "u -" })]
+        [InlineData(new string[] { "eggs", "drew" },
+            new string[] { "- e", "e g", "z", "j@", "rru", "u -" })]
+        [InlineData(new string[] { "eggs", "string" },
+            new string[] { "- e", "e g", "z", "s", "ch@", "rre", "e ng", "ng -" })]
+        public void SyllableAffricateClusterTest(string[] lyrics, string[] aliases) {
+            SameAltsTonesColorsTest(lyrics, aliases);
+        }
     }
 }
