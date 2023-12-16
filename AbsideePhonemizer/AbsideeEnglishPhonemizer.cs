@@ -53,18 +53,24 @@ namespace AbsideePhonemizer {
         }
 
         protected override string[] GetSymbols(Note note) {
-            if (note.lyric == "-" || note.lyric == "hh") {
+            if (tails.Contains(note.lyric)) {
                 return new string[] { note.lyric };
             }
+            if (note.lyric.ToUpper() == "AND") {
+                return new string[] { "e", "n", "d" };
+            }
+
             var symbols = base.GetSymbols(note);
 
-            // combine affricates
-            var symbolString = string.Join(" ", symbols);
-            symbolString = symbolString.Replace("t s", "ts");
-            symbolString = symbolString.Replace("d z", "dz");
-            symbolString = symbolString.Replace("t rr", "ch rr");
-            symbolString = symbolString.Replace("d rr", "j rr");
-            symbols = symbolString.Split();
+            // combine affricates unless hinted otherwise
+            if (string.IsNullOrEmpty(note.phoneticHint)) {
+                var symbolString = string.Join(" ", symbols);
+                symbolString = symbolString.Replace("t s", "ts");
+                symbolString = symbolString.Replace("d z", "dz");
+                symbolString = symbolString.Replace("t rr", "ch rr");
+                symbolString = symbolString.Replace("d rr", "j rr");
+                symbols = symbolString.Split();
+            }
 
             // split diphthongs
             var diphthongs = new Dictionary<string, string[]> {
@@ -89,7 +95,7 @@ namespace AbsideePhonemizer {
         }
 
         protected override List<string> ProcessEnding(Ending ending) {
-            if (ending.prevV == "-" || ending.prevV == "hh") {
+            if (tails.Contains(ending.prevV)) {
                 return new List<string>();
             }
 
@@ -121,33 +127,28 @@ namespace AbsideePhonemizer {
                 phonemes.Add($"{consonants[0]} -");
             } else {
                 var prevCons = consonants[0];
-                var lastCons = consonants.Last();
-                for (var i = 1; i < consonants.Count; i++) {
-                    if (prevCons == "i" || prevCons == "u") {
-                        phonemes.Add($"{prevCons} {consonants[i]}");
-                    } else if (IsValidNasalCluster(prevCons, consonants[i] )) {
-                        phonemes.Add($"n {consonants[i]}");
-                    } else if (i < consonants.Count-1){
-                        phonemes.Add(consonants[i]);
-                    }
-                    prevCons = consonants[i];
+                if (affricates.Contains(prevCons)) {
+                    phonemes.Add(prevCons);
                 }
-                phonemes.Add($"{lastCons} -");
+                for (var i = 1; i < consonants.Count; i++) {
+                    var currCons = consonants[i];
+                    if (prevCons == "i" || prevCons == "u") {
+                        phonemes.Add($"{prevCons} {currCons}");
+                    } else if (IsValidNasalCluster(prevCons, currCons )) {
+                        phonemes.Add($"n {currCons}");
+                    } else if (i < consonants.Count-1){
+                        phonemes.Add(currCons);
+                    }
+                    prevCons = currCons;
+                }
+                phonemes.Add($"{consonants.Last()} -");
             }
 
             return phonemes;
         }
 
-        private bool IsValidNasalCluster(string nasal, string consonant) {
-            var valid = new Dictionary<string, string[]> {
-                {"n", new string[] {"n", "t", "ch", "ts", "d", "dz", "r", "l"} },
-                {"m", new string[] {"m", "b", "by", "p", "py" } },
-                {"ng", new string[] {"ng","k", "ky", "g", "gy"} }
-            };
-            return valid.ContainsKey(nasal) ? valid[nasal].Contains(consonant) : false;
-        }
-
         protected override List<string> ProcessSyllable(Syllable syllable) {
+            syllable.prevV = tails.Contains(syllable.prevV) ? "" : syllable.prevV;
             var prevV = syllable.prevV == "" ? "" : $"{syllable.prevV} ";
             var cc = syllable.cc;
             var v = syllable.v;
@@ -155,7 +156,7 @@ namespace AbsideePhonemizer {
             if (syllable.IsStartingV) {
                 return new List<string> { $"- {v}" };
             }
-            if (syllable.IsVV || v == "-" || v == "hh") {
+            if (syllable.IsVV) {
                 return new List<string> { $"{prevV}{v}" };
             }
             if (syllable.IsStartingCVWithOneConsonant) {
@@ -171,7 +172,7 @@ namespace AbsideePhonemizer {
                 var vcv = $"{prevV}{cc[0]}{v}";
                 if (util.CanVCV(vcv, syllable.attr, syllable.tone, syllable.vowelAttr, syllable.vowelTone)) {
                     return new List<string> { vcv };
-                } else {
+                } else if (!tails.Contains(v)) {
                     return new List<string> {$"{prevV}{cc[0]}", $"{cc[0]}{v}" };
                 }
             }
@@ -180,7 +181,9 @@ namespace AbsideePhonemizer {
                 { "rr", "@" },
                 { "l", "@" },
                 { "y", "i" },
-                { "w", "u" }
+                { "w", "u" },
+                { "i", "i" },
+                { "u", "u" }
             };
 
             var phonemes = new List<string>();
@@ -197,15 +200,23 @@ namespace AbsideePhonemizer {
                         if (prev != "") {
                             phonemes.Add($"{prev}{current}");
                         }
-                        phonemes.Add($"{current}{liquidPairs[cc[i+1]]}");
+                        if (!liquidPairs.ContainsKey(current)) {
+                            phonemes.Add($"{current}{liquidPairs[cc[i+1]]}");
+                        }
                     }
                 } else {
                     phonemes.Add($"{prev}{current}");
+                    if (affricates.Contains(current)) {
+                        phonemes.Add(current);
+                    }
                 }
 
                 if (current == "i" || current == "u") {
                     prev = $"{current} ";
                 } else {
+                    if (IsValidNasalCluster(current, cc[i+1])) {
+                        phonemes.Add($"n {cc[i+1]}");
+                    }
                     prev = "";
                 }
             }
@@ -213,8 +224,32 @@ namespace AbsideePhonemizer {
                 phonemes.Add($"{prev}{cc.Last()}");
             }
 
-            phonemes.Add($"{cc.Last()}{v}");
+            // final CV
+            if (v == "-") {
+                phonemes.Add($"{cc.Last()} -");
+            } else if (v == "hh") {
+                if (GetVowels().Contains(cc.Last())) {
+                    phonemes.Add($"{cc.Last()} hh");
+                } else {
+                    phonemes.AddRange(new string[] { $"{cc.Last()}@", "@ hh" });
+                }
+            } else {
+                phonemes.Add($"{cc.Last()}{v}");
+            }
+
             return phonemes;
+        }
+
+        private string[] affricates = "ch j ts dz".Split();
+        private string[] tails = "- hh".Split();
+
+        private bool IsValidNasalCluster(string nasal, string consonant) {
+            var valid = new Dictionary<string, string[]> {
+                {"n", new string[] {"t", "ch", "ts", "d", "dz", "r", "l"} },
+                {"m", new string[] {"b", "by", "p", "py" } },
+                {"ng", new string[] {"k", "ky", "g", "gy"} }
+            };
+            return valid.ContainsKey(nasal) ? valid[nasal].Contains(consonant) : false;
         }
     }
 }

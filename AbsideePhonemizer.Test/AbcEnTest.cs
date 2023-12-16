@@ -224,6 +224,10 @@ namespace AbsideePhonemizer.Test {
             new string[] { "- @", "@ k", "ki", "yu", "u t", "t -" })]
         [InlineData(new string[] { "a", "queen" },
             new string[] { "- @", "@ k", "ku", "wi", "i n", "n -" })]
+        [InlineData(new string[] { "I", "you" },
+            new string[] { "- a", "a i", "i y", "yu", "u -" })]
+        [InlineData(new string[] { "all", "you" },
+            new string[] { "- o", "o l", "yu", "u -" })]
         public void SyllableLiquidGlideClusterTest(string[] lyrics, string[] aliases) {
             SameAltsTonesColorsTest(lyrics, aliases);
         }
@@ -274,8 +278,38 @@ namespace AbsideePhonemizer.Test {
             new string[] { "la", "-" },
             new string[] { "- la", "a -" })]
         [InlineData(
+            new string[] { "I", "-" },
+            new string[] { "- a", "a i", "i -" })]
+        [InlineData(
+            new string[] { "her", "-" },
+            new string[] { "- h@", "@ rr", "rr -" })]
+        [InlineData(
+            new string[] { "egg", "-" },
+            new string[] { "- e", "e g", "g -" })]
+        [InlineData(
+            new string[] { "eggs", "-" },
+            new string[] { "- e", "e g", "z -" })]
+        [InlineData(
             new string[] { "la", "hh" },
             new string[] { "- la", "a hh" })]
+        [InlineData(
+            new string[] { "I", "hh" },
+            new string[] { "- a", "a i", "i hh" })]
+        [InlineData(
+            new string[] { "her", "hh" },
+            new string[] { "- h@", "@ rr", "rr@", "@ hh" })]
+        [InlineData(
+            new string[] { "egg", "hh" },
+            new string[] { "- e", "e g", "g@", "@ hh" })]
+        [InlineData(
+            new string[] { "eggs", "hh" },
+            new string[] { "- e", "e g", "z@", "@ hh" })]
+        [InlineData(
+            new string[] { "a", "-", "a" },
+            new string[] { "- @", "@ -", "- @", "@ -" })]
+        [InlineData(
+            new string[] { "a", "hh", "a" },
+            new string[] { "- @", "@ hh", "- @", "@ -" })]
         public void SeparatedTailTest(string[] lyrics, string[] aliases) {
             SameAltsTonesColorsTest(lyrics, aliases);
         }
@@ -363,6 +397,73 @@ namespace AbsideePhonemizer.Test {
             new string[] { "- @_Eb5", "@ s_Bb4", "si_Bb4", "i_Eb5", "i -_Bb4" })]
         public void OnlySplitHighVowelsTest(string[] lyrics, string[] aliases) {
             SameAltsTonesColorsTest("", lyrics, aliases, "", "F5", "");
+        }
+
+        [Theory]
+        [InlineData("its", "",
+            new string[] { "- e_G3", "e ts_G3", "ts -_G3" })]
+        [InlineData("its", "e t s",
+            new string[] { "- e_G3", "e t_G3", "s -_G3" })]
+        [InlineData("ads", "",
+            new string[] { "- e_G3", "e dz_G3", "dz -_G3" })]
+        [InlineData("ads", "e d z",
+            new string[] { "- e_G3", "e d_G3", "z -_G3" })]
+        [InlineData("true", "",
+            new string[] { "- ch@_G3", "rru_G3", "u -_G3" })]
+        [InlineData("true", "t rr u",
+            new string[] { "- t@_G3", "rru_G3", "u -_G3" })]
+        [InlineData("drew", "",
+            new string[] { "- j@_G3", "rru_G3", "u -_G3" })]
+        [InlineData("drew", "d rr u",
+            new string[] { "- d@_G3", "rru_G3", "u -_G3" })]
+        public void DontMergeHintsTest(string lyric, string hint, string[] aliases) {
+            RunPhonemizeTest("", new NoteParams[] {
+                new NoteParams { lyric = lyric, hint = hint, tone = "C4", phonemes = SamePhonemeParams(10, 0, 0, "")}
+            }, aliases);
+        }
+
+        [Fact]
+        public void AndTest() {
+            SameAltsTonesColorsTest("and", new string[] { "- e", "e n", "n d", "d -" });
+        }
+
+        [Theory]
+        [InlineData(new string[] { "etched" },
+            new string[] { "- e", "e ch", "ch", "t -" })]
+        [InlineData(new string[] { "etched", "a" },
+            new string[] { "- e", "e ch", "ch", "t@", "@ -" })]
+        [InlineData(new string[] { "edged" },
+            new string[] { "- e", "e j", "j", "d -" })]
+        [InlineData(new string[] { "edged", "a" },
+            new string[] { "- e", "e j", "j", "d@", "@ -" })]
+        [InlineData(new string[] { "batch", "check" },
+            new string[] { "- be", "e ch", "ch", "che", "e k", "k -" })]
+        [InlineData(new string[] { "addsd" },
+            new string[] { "- e", "e dz", "dz", "d -" })]
+        [InlineData(new string[] { "adds", "to" },
+            new string[] { "- e", "e dz", "dz", "tu", "u -" })]
+        [InlineData(new string[] { "itst" },
+            new string[] { "- e", "e ts", "ts", "t -" })]
+        [InlineData(new string[] { "its", "to" },
+            new string[] { "- e", "e ts", "ts", "tu", "u -" })]
+        public void AffricateClusterTest(string[] lyrics, string[] aliases) {
+            SameAltsTonesColorsTest(lyrics, aliases);
+        }
+
+        [Theory]
+
+        [InlineData(new string[] { "ink", "a" },
+            new string[] { "- e", "e ng", "n k", "k@", "@ -" })]
+        [InlineData(new string[] { "int", "a" },
+            new string[] { "- e", "e n", "n t", "t@", "@ -" })]
+        [InlineData(new string[] { "imp", "a" },
+            new string[] { "- e", "e m", "n p", "p@", "@ -" })]
+        [InlineData(new string[] { "am", "to" },
+            new string[] { "- e", "e m", "tu", "u -" })]
+        [InlineData(new string[] { "am", "my" },
+            new string[] { "- e", "e m", "ma", "a i", "i -" })]
+        public void SyllableNasalClusterTest(string[] lyrics, string[] aliases) {
+            SameAltsTonesColorsTest(lyrics, aliases);
         }
     }
 }
