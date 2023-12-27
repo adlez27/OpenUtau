@@ -373,6 +373,15 @@ namespace AbsideePhonemizer.Test {
             }, aliases);
         }
 
+        [Fact]
+        public void CutHighMultiSyllableTest() {
+            RunPhonemizeTest("", new NoteParams[] {
+                new NoteParams {lyric = "connect", hint = "", tone = "C5", phonemes = SamePhonemeParams(1, 0, 0, "")},
+                new NoteParams {lyric = "+", hint = "", tone = "D5", phonemes = SamePhonemeParams(10, 0, 0, "")},
+                new NoteParams {lyric = "all", hint = "", tone = "D5", phonemes = SamePhonemeParams(10, 0, 0, "")},
+            }, new string[] { "- k@_Bb4", "@ n_Bb4", "ne_Bb4", "e_Eb5", "e k_Bb4", "to_Bb4", "o_Eb5", "o l_Bb4", "l -_Bb4" });
+        }
+
         [Theory]
         [InlineData(
             new string[] { "a", "see" },

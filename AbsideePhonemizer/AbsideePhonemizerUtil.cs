@@ -41,7 +41,7 @@ namespace AbsideePhonemizer {
                 int tone = (i == 0 && prevs != null && prevs.Length > 0)
                     ? prevs.Last().tone : notes[noteIndex].tone;
 
-                var phonemeLength = i == phonemes.Count - 1 ? note.duration - phoneme.position :
+                var phonemeLength = i == phonemes.Count - 1 ? notes.Sum(n => n.duration) - phoneme.position :
                     phonemes[i+1].position - phoneme.position;
 
                 adjustedPhonemes.AddRange(AssignSuffix(phoneme, phonemeLength, tone + toneShift, color));
