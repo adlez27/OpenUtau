@@ -462,6 +462,8 @@ namespace AbsideePhonemizer.Test {
             new string[] { "- e", "e m", "tu", "u -" })]
         [InlineData(new string[] { "am", "my" },
             new string[] { "- e", "e m", "ma", "a i", "i -" })]
+        [InlineData(new string[] { "int", "star" },
+            new string[] { "- e", "e n", "n t", "s", "ta", "a rr", "rr -" })]
         public void SyllableNasalClusterTest(string[] lyrics, string[] aliases) {
             SameAltsTonesColorsTest(lyrics, aliases);
         }

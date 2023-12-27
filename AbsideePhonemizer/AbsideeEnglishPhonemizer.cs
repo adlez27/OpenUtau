@@ -216,6 +216,7 @@ namespace AbsideePhonemizer {
                 } else {
                     if (IsValidNasalCluster(current, cc[i+1])) {
                         phonemes.Add($"n {cc[i+1]}");
+                        i++;
                     }
                     prev = "";
                 }
