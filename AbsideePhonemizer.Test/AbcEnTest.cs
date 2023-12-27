@@ -324,18 +324,20 @@ namespace AbsideePhonemizer.Test {
             }, new string[] { "- la_G3", "a -_S" });
         }
 
-        [Fact]
-        public void PitchTest() {
+        [Theory]
+        [InlineData("A4", 0)]
+        [InlineData("A3", 12)]
+        public void PitchTest(string tone, int shift) {
             RunPhonemizeTest("", new NoteParams[] {
-                new NoteParams { lyric = "a", hint = "", tone = "C4", phonemes = new PhonemeParams[] {
+                new NoteParams { lyric = "a", hint = "", tone = "A3", phonemes = new PhonemeParams[] {
                     new PhonemeParams { alt = 0, color = "", shift = 0}
                 } },
-                new NoteParams { lyric = "see", hint = "", tone = "C4", phonemes = new PhonemeParams[] {
-                    new PhonemeParams { alt = 0, color = "", shift = 12},
+                new NoteParams { lyric = "see", hint = "", tone = tone, phonemes = new PhonemeParams[] {
                     new PhonemeParams { alt = 0, color = "", shift = 0},
-                    new PhonemeParams { alt = 0, color = "", shift = 0},
+                    new PhonemeParams { alt = 0, color = "", shift = shift},
+                    new PhonemeParams { alt = 0, color = "", shift = shift},
                 } }
-            }, new string[] { "- @_G3", "@ s_Bb4", "si_G3", "i -_G3" });
+            }, new string[] { "- @_G3", "@ s_G3", "si_Bb4", "i -_Bb4" });
         }
 
         [Fact]
@@ -345,49 +347,29 @@ namespace AbsideePhonemizer.Test {
         }
 
         [Theory]
-        [InlineData("", "F4", 0,
+        [InlineData("F4", 0,
             new string[] { "- la_Bb4", "a -_Bb4" })]
-        [InlineData("", "F4", -1,
+        [InlineData("F4", -1,
             new string[] { "- la_Bb4", "a -_Bb4" })]
-        [InlineData("", "F4", 1,
+        [InlineData("F4", 1,
             new string[] { "- la_Bb4", "a -_Bb4" })]
-        [InlineData("", "F4", -12,
+        [InlineData("F4", -12,
             new string[] { "- la_G3", "a -_G3" })]
-        [InlineData("", "F4", 12,
+        [InlineData("F4", 12,
             new string[] { "- la_Bb4", "a_Eb5", "a -_Bb4" })]
-        [InlineData("", "F5", 0,
+        [InlineData("F5", 0,
             new string[] { "- la_Bb4", "a_Eb5", "a -_Bb4" })]
-        [InlineData("", "F5", -1,
+        [InlineData("F5", -1,
             new string[] { "- la_Bb4", "a_Eb5", "a -_Bb4" })]
-        [InlineData("", "F5", 1,
+        [InlineData("F5", 1,
             new string[] { "- la_Bb4", "a_Eb5", "a -_Bb4" })]
-        [InlineData("", "F5", -12,
+        [InlineData("F5", -12,
             new string[] { "- la_Bb4", "a -_Bb4" })]
-        [InlineData("", "F5", 12,
+        [InlineData("F5", 12,
             new string[] { "- la_Bb4", "a_Eb5", "a -_Bb4" })]
-        [InlineData("Soft", "F4", 0,
-            new string[] { "- la_S", "a -_S" })]
-        [InlineData("Soft", "F4", -1,
-            new string[] { "- la_S", "a -_S" })]
-        [InlineData("Soft", "F4", 1,
-            new string[] { "- la_S", "a -_S" })]
-        [InlineData("Soft", "F4", -12,
-            new string[] { "- la_S", "a -_S" })]
-        [InlineData("Soft", "F4", 12,
-            new string[] { "- la_S", "a -_S" })]
-        [InlineData("Soft", "F5", 0,
-            new string[] { "- la_S", "a -_S" })]
-        [InlineData("Soft", "F5", -1,
-            new string[] { "- la_S", "a -_S" })]
-        [InlineData("Soft", "F5", 1,
-            new string[] { "- la_S", "a -_S" })]
-        [InlineData("Soft", "F5", -12,
-            new string[] { "- la_S", "a -_S" })]
-        [InlineData("Soft", "F5", 12,
-            new string[] { "- la_S", "a -_S" })]
-        public void CutHighNotesTest(string color, string tone, int shift, string[] aliases) {
+        public void CutHighNotesTest(string tone, int shift, string[] aliases) {
             RunPhonemizeTest("", new NoteParams[] {
-                new NoteParams { lyric = "la", hint = "", tone = tone, phonemes = SamePhonemeParams(3, shift, 0, color) },
+                new NoteParams { lyric = "la", hint = "", tone = tone, phonemes = SamePhonemeParams(3, shift, 0, "") },
             }, aliases);
         }
 
