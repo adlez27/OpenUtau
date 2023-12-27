@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using OpenUtau.Api;
 using OpenUtau.Classic;
+using OpenUtau.Core;
 using OpenUtau.Core.Ustx;
 using WanaKanaNet;
 using static OpenUtau.Api.Phonemizer;
@@ -40,12 +41,15 @@ namespace AbsideePhonemizer {
                 int tone = (i == 0 && prevs != null && prevs.Length > 0)
                     ? prevs.Last().tone : notes[noteIndex].tone;
 
-                adjustedPhonemes.AddRange(AssignSuffix(phoneme, note.tone + toneShift, color));
+                var phonemeLength = i == phonemes.Count - 1 ? note.duration - phoneme.position :
+                    phonemes[i+1].position - phoneme.position;
+
+                adjustedPhonemes.AddRange(AssignSuffix(phoneme, phonemeLength, note.tone + toneShift, color));
             }
             return adjustedPhonemes.ToArray();
         }
 
-        public List<Phoneme> AssignSuffix(Phoneme phoneme, int tone, string color) {
+        public List<Phoneme> AssignSuffix(Phoneme phoneme, int phonemeLength, int tone, string color) {
             if (color == "Soft") {
                 phoneme.phoneme += "_S";
                 return new List<Phoneme> { phoneme };
@@ -62,6 +66,10 @@ namespace AbsideePhonemizer {
             var aliasEnd = phoneme.phoneme.Last().ToString();
             phoneme.phoneme += "_Bb4";
 
+            if (phonemeLength < 120) {
+                return new List<Phoneme> { phoneme };
+            }
+
             var vowel = WanaKana.IsHiragana(aliasEnd) ? WanaKana.ToRomaji(aliasEnd).Last().ToString() : aliasEnd;
             var validVowels = "a i u e o n @".Split();
             if (!validVowels.Contains(vowel)) {
@@ -73,7 +81,7 @@ namespace AbsideePhonemizer {
                 phoneme,
                 new Phoneme {
                     phoneme = $"{vowel}_Eb5",
-                    position = phoneme.position + 10,
+                    position = phoneme.position + 20,
                     attributes = phoneme.attributes
                 }
             };

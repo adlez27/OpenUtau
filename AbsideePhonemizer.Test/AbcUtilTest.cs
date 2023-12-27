@@ -26,7 +26,7 @@ namespace AbsideePhonemizer.Test {
         [InlineData("a", "Soft", "a_S")]
         [InlineData("a", "asdf", "a_G3")]
         public void ColorSuffixTest(string alias,  string color, string result) {
-            Assert.Equal(result, util.AssignSuffix(new Phoneme { phoneme = alias }, MusicMath.NameToTone("C4"), color).First().phoneme);
+            Assert.Equal(result, util.AssignSuffix(new Phoneme { phoneme = alias }, 480, MusicMath.NameToTone("C4"), color).First().phoneme);
         }
 
         [Theory]
@@ -34,7 +34,7 @@ namespace AbsideePhonemizer.Test {
         [InlineData("a", "A4", "a_Bb4")]
         [InlineData("a", "G5", "a_Eb5")]
         public void PitchSuffixTest(string alias, string tone, string result) {
-            Assert.Equal(result, util.AssignSuffix(new Phoneme { phoneme = alias}, MusicMath.NameToTone(tone), "").First().phoneme);
+            Assert.Equal(result, util.AssignSuffix(new Phoneme { phoneme = alias}, 480, MusicMath.NameToTone(tone), "").First().phoneme);
         }
 
         [Theory]
