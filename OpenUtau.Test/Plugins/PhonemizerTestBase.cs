@@ -45,6 +45,7 @@ namespace OpenUtau.Plugins {
 
         void RunPhonemizeTest(string singerName, List<Phonemizer.Note[]> groups, string[] aliases) {
             var voicebank = GetVoicebank(singerName);
+            VoicebankLoader.IsTest = true;
             VoicebankLoader.LoadVoicebank(voicebank);
             var singer = new ClassicSinger(voicebank);
             singer.EnsureLoaded();
